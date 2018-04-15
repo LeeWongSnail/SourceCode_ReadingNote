@@ -1,0 +1,7 @@
+if ([value isKindOfClass:[NSString class]]) { //如果是字符串类型
+    if (meta->_nsType == YYEncodingTypeNSString) {
+        ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);	//利用runtime objc_msgSend(target,selector,argument) 
+    } else {
+        ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, ((NSString *)value).mutableCopy); //这样调用也会触发属性的setter方法
+    }
+}
