@@ -16,12 +16,14 @@
 #import <objc/runtime.h>
 #import <time.h>
 
+
 #define Lock() dispatch_semaphore_wait(self->_lock, DISPATCH_TIME_FOREVER)
 #define Unlock() dispatch_semaphore_signal(self->_lock)
 
 static const int extended_data_key;
 
 /// Free disk space in bytes.
+// 计算Document目录下文件的总大小
 static int64_t _YYDiskSpaceFree() {
     NSError *error = nil;
     NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfFileSystemForPath:NSHomeDirectory() error:&error];
@@ -54,10 +56,12 @@ static void _YYDiskCacheInitGlobal() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _globalInstancesLock = dispatch_semaphore_create(1);
+        // NSMapTable 这是一个啥
         _globalInstances = [[NSMapTable alloc] initWithKeyOptions:NSPointerFunctionsStrongMemory valueOptions:NSPointerFunctionsWeakMemory capacity:0];
     });
 }
 
+//都是使用信号量的机制来保证读写安全
 static YYDiskCache *_YYDiskCacheGetGlobal(NSString *path) {
     if (path.length == 0) return nil;
     _YYDiskCacheInitGlobal();
@@ -83,6 +87,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     dispatch_queue_t _queue;
 }
 
+//递归的检测
 - (void)_trimRecursively {
     __weak typeof(self) _self = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_autoTrimInterval * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
@@ -93,6 +98,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     });
 }
 
+// 与内存缓存相比多了一个_trimToFreeDiskSpace 限制磁盘缓存空间
 - (void)_trimInBackground {
     __weak typeof(self) _self = self;
     dispatch_async(_queue, ^{
@@ -199,7 +205,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     _countLimit = NSUIntegerMax;
     _costLimit = NSUIntegerMax;
     _ageLimit = DBL_MAX;
-    _freeDiskSpaceLimit = 0;
+    _freeDiskSpaceLimit = 0; //默认为0 可以完全使用磁盘
     _autoTrimInterval = 60;
     
     [self _trimRecursively];
@@ -238,6 +244,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     if (_customUnarchiveBlock) {
         object = _customUnarchiveBlock(item.value);
     } else {
+        //这里还是用了try-catch的方式避免崩溃
         @try {
             object = [NSKeyedUnarchiver unarchiveObjectWithData:item.value];
         }
