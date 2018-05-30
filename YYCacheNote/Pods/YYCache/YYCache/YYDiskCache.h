@@ -49,6 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
  objects will be stored in sqlite. 
  
  The default value is 20480 (20KB).
+ 这个属性意思是 对象的二进制大小是否大于inlineThreshold 如果大于这个值那么将会被以文件的方式存储
+ 如果不大于这个值 那么将会以sqlite的形式存储
  */
 @property (readonly) NSUInteger inlineThreshold;
 
@@ -56,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
  If this block is not nil, then the block will be used to archive object instead
  of NSKeyedArchiver. You can use this block to support the objects which do not
  conform to the `NSCoding` protocol.
+ 
+ 可以自己设置数据的归档 可以使用这个block来为那些不支持NSCoding协议的对象做归档操作
  
  The default value is nil.
  */
@@ -66,6 +70,8 @@ NS_ASSUME_NONNULL_BEGIN
  of NSKeyedUnarchiver. You can use this block to support the objects which do not
  conform to the `NSCoding` protocol.
  
+ 用于解归档的跟上面的归档是对应的
+ 
  The default value is nil.
  */
 @property (nullable, copy) id (^customUnarchiveBlock)(NSData *data);
@@ -74,6 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
  When an object needs to be saved as a file, this block will be invoked to generate
  a file name for a specified key. If the block is nil, the cache use md5(key) as 
  default file name.
+ 
+ 如果对象的二进制大小 需要超过inlineThreshold需要以文件的形式存储 那么可以通过这个block来设置
+ 这个文件的名称 如果未nil默认使用key的MD5的值进行设置
  
  The default value is nil.
  */
@@ -120,6 +129,8 @@ NS_ASSUME_NONNULL_BEGIN
  If the free disk space is lower than this value, the cache will remove objects
  to free some disk space. This is not a strict limit—if the free disk space goes
  over the limit, the objects could be evicted later in background queue.
+ 
+ 设置磁盘空间最小的空间阈值 如果剩余的磁盘空间小于这个值 那么会自动释放这个应用的磁盘空间
  */
 @property NSUInteger freeDiskSpaceLimit;
 
