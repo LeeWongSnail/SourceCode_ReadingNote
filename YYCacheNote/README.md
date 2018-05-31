@@ -428,4 +428,39 @@ autoTrimInterval | 默认60单位s 递归检测磁盘缓存的时间间隔
 }
 ```
 
+磁盘缓存的检测和清理:
+
+```objc
+//递归的检测
+- (void)_trimRecursively {
+    __weak typeof(self) _self = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_autoTrimInterval * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        __strong typeof(_self) self = _self;
+        if (!self) return;
+        [self _trimInBackground];
+        [self _trimRecursively];
+    });
+}
+
+// 与内存缓存相比多了一个_trimToFreeDiskSpace 限制磁盘缓存空间
+- (void)_trimInBackground {
+    __weak typeof(self) _self = self;
+    dispatch_async(_queue, ^{
+        __strong typeof(_self) self = _self;
+        if (!self) return;
+        Lock();
+        [self _trimToCost:self.costLimit];
+        [self _trimToCount:self.countLimit];
+        [self _trimToAge:self.ageLimit];
+        [self _trimToFreeDiskSpace:self.freeDiskSpaceLimit];
+        Unlock();
+    });
+}
+```
+
+
+#### 总结
+
+以上就是对于YYCache的解析,下面总结一下YYCache中的一些值得学习的地方
+
 
