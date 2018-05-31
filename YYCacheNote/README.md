@@ -300,3 +300,132 @@ ageLimit   | 磁盘缓存可以保存文件最长的时间
 freeDiskSpaceLimit | 设置磁盘空间最小的空间阈值 如果剩余的磁盘空间小于这个值 那么会自动释放这个应用的磁盘空间
 autoTrimInterval | 默认60单位s 递归检测磁盘缓存的时间间隔
 
+
+下面我们再来看一下DiskCache中的一些方法:
+
+设置一个对象:
+
+```objc
+// 增加一条磁盘缓存
+- (void)setObject:(id<NSCoding>)object forKey:(NSString *)key {
+    if (!key) return;
+    //如果object为nil相当于将当前_kv中的记录删除
+    if (!object) {
+        [self removeObjectForKey:key];
+        return;
+    }
+    
+    //获取这个object的扩展数据
+    NSData *extendedData = [YYDiskCache getExtendedDataFromObject:object];
+    NSData *value = nil;
+    
+    //是否有自定义的归档方法 如果有就执行自定义的方法
+    if (_customArchiveBlock) {
+        value = _customArchiveBlock(object);
+    } else {
+        // 如果没有自定义归档方法那么使用NSKeyedArchiver进行归档
+        @try {
+            value = [NSKeyedArchiver archivedDataWithRootObject:object];
+        }
+        @catch (NSException *exception) {
+            // nothing to do...
+        }
+    }
+    
+    
+    if (!value) return;
+    NSString *filename = nil;
+    //是否已sqlite的方式存储 如果不是那么就是要通过写文件的方式
+    if (_kv.type != YYKVStorageTypeSQLite) {
+        if (value.length > _inlineThreshold) {
+            filename = [self _filenameForKey:key];
+        }
+    }
+    
+    Lock();
+    //将这个对象保存到磁盘缓存中
+    [_kv saveItemWithKey:key value:value filename:filename extendedData:extendedData];
+    Unlock();
+}
+```
+
+
+```objc
+// 将某个对象保存到本地磁盘缓存中
+- (BOOL)saveItemWithKey:(NSString *)key value:(NSData *)value filename:(NSString *)filename extendedData:(NSData *)extendedData {
+    if (key.length == 0 || value.length == 0) return NO;
+    //如果是要保存成文件形式 但是没有传入文件名 那么直接返回NO
+    if (_type == YYKVStorageTypeFile && filename.length == 0) {
+        return NO;
+    }
+    
+    if (filename.length) {
+        //将数据写入文件
+        if (![self _fileWriteWithName:filename data:value]) {
+            return NO;
+        }
+        // 将数据写入文件之后 在数据库中插入一条记录
+        if (![self _dbSaveWithKey:key value:value fileName:filename extendedData:extendedData]) {
+            //如果数据库写入失败 那么将 上一步写的文件也删除
+            [self _fileDeleteWithName:filename];
+            return NO;
+        }
+        return YES;
+    } else {
+        // 没有filename
+        if (_type != YYKVStorageTypeSQLite) {   //如果不是仅以SQLite的形式存储(还有混合存储)
+            //从数据库中查找key对应的filename
+            NSString *filename = [self _dbGetFilenameWithKey:key];
+            //如果在数据库中可以找到key对应的这个文件名 说明之前这个key缓存过一次
+            if (filename) {
+                // 删除之前写的这个文件
+                [self _fileDeleteWithName:filename];
+            }
+        }
+        //将这条记录插入到数据库中
+        return [self _dbSaveWithKey:key value:value fileName:nil extendedData:extendedData];
+    }
+}
+```
+
+获取某一个object:
+
+```objc
+- (id<NSCoding>)objectForKey:(NSString *)key {
+    if (!key) return nil;
+    Lock();
+    YYKVStorageItem *item = [_kv getItemForKey:key];
+    Unlock();
+    if (!item.value) return nil;
+    
+    id object = nil;
+    if (_customUnarchiveBlock) {
+        object = _customUnarchiveBlock(item.value);
+    } else {
+        //这里还是用了try-catch的方式避免崩溃
+        @try {
+            object = [NSKeyedUnarchiver unarchiveObjectWithData:item.value];
+        }
+        @catch (NSException *exception) {
+            // nothing to do...
+        }
+    }
+    if (object && item.extendedData) {
+        [YYDiskCache setExtendedData:item.extendedData toObject:object];
+    }
+    return object;
+}
+```
+
+删除某一个元素
+
+```objc
+- (void)removeObjectForKey:(NSString *)key {
+    if (!key) return;
+    Lock();
+    [_kv removeItemForKey:key];
+    Unlock();
+}
+```
+
+

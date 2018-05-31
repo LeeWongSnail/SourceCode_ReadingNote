@@ -233,6 +233,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     });
 }
 
+
 - (id<NSCoding>)objectForKey:(NSString *)key {
     if (!key) return nil;
     Lock();
@@ -268,18 +269,24 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     });
 }
 
+// 增加一条磁盘缓存
 - (void)setObject:(id<NSCoding>)object forKey:(NSString *)key {
     if (!key) return;
+    //如果object为nil相当于将当前_kv中的记录删除
     if (!object) {
         [self removeObjectForKey:key];
         return;
     }
     
+    //获取这个object的扩展数据
     NSData *extendedData = [YYDiskCache getExtendedDataFromObject:object];
     NSData *value = nil;
+    
+    //是否有自定义的归档方法 如果有就执行自定义的方法
     if (_customArchiveBlock) {
         value = _customArchiveBlock(object);
     } else {
+        // 如果没有自定义归档方法那么使用NSKeyedArchiver进行归档
         @try {
             value = [NSKeyedArchiver archivedDataWithRootObject:object];
         }
@@ -287,8 +294,11 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
             // nothing to do...
         }
     }
+    
+    
     if (!value) return;
     NSString *filename = nil;
+    //是否已sqlite的方式存储 如果不是那么就是要通过写文件的方式
     if (_kv.type != YYKVStorageTypeSQLite) {
         if (value.length > _inlineThreshold) {
             filename = [self _filenameForKey:key];
@@ -296,6 +306,7 @@ static void _YYDiskCacheSetGlobal(YYDiskCache *cache) {
     }
     
     Lock();
+    //将这个对象保存到磁盘缓存中
     [_kv saveItemWithKey:key value:value filename:filename extendedData:extendedData];
     Unlock();
 }

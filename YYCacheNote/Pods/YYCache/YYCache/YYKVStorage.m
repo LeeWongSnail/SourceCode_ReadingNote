@@ -771,28 +771,38 @@ static UIApplication *_YYSharedApplication() {
     return [self saveItemWithKey:key value:value filename:nil extendedData:nil];
 }
 
+// 将某个对象保存到本地磁盘缓存中
 - (BOOL)saveItemWithKey:(NSString *)key value:(NSData *)value filename:(NSString *)filename extendedData:(NSData *)extendedData {
     if (key.length == 0 || value.length == 0) return NO;
+    //如果是要保存成文件形式 但是没有传入文件名 那么直接返回NO
     if (_type == YYKVStorageTypeFile && filename.length == 0) {
         return NO;
     }
     
     if (filename.length) {
+        //将数据写入文件
         if (![self _fileWriteWithName:filename data:value]) {
             return NO;
         }
+        // 将数据写入文件之后 在数据库中插入一条记录
         if (![self _dbSaveWithKey:key value:value fileName:filename extendedData:extendedData]) {
+            //如果数据库写入失败 那么将 上一步写的文件也删除
             [self _fileDeleteWithName:filename];
             return NO;
         }
         return YES;
     } else {
-        if (_type != YYKVStorageTypeSQLite) {
+        // 没有filename
+        if (_type != YYKVStorageTypeSQLite) {   //如果不是仅以SQLite的形式存储(还有混合存储)
+            //从数据库中查找key对应的filename
             NSString *filename = [self _dbGetFilenameWithKey:key];
+            //如果在数据库中可以找到key对应的这个文件名 说明之前这个key缓存过一次
             if (filename) {
+                // 删除之前写的这个文件
                 [self _fileDeleteWithName:filename];
             }
         }
+        //将这条记录插入到数据库中
         return [self _dbSaveWithKey:key value:value fileName:nil extendedData:extendedData];
     }
 }
