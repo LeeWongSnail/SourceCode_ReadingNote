@@ -188,9 +188,13 @@ static UIApplication *_YYSharedApplication() {
 
 - (sqlite3_stmt *)_dbPrepareStmt:(NSString *)sql {
     if (![self _dbCheck] || sql.length == 0 || !_dbStmtCache) return NULL;
+    //获取字符串sql对应的可执行sql语句
     sqlite3_stmt *stmt = (sqlite3_stmt *)CFDictionaryGetValue(_dbStmtCache, (__bridge const void *)(sql));
+    
     if (!stmt) {
+        //将一个SQL命令字符串转换成一条prepared语句，存储在sqlite3_stmt类型结构体中
         int result = sqlite3_prepare_v2(_db, sql.UTF8String, -1, &stmt, NULL);
+        
         if (result != SQLITE_OK) {
             if (_errorLogsEnabled) NSLog(@"%s line:%d sqlite stmt prepare error (%d): %s", __FUNCTION__, __LINE__, result, sqlite3_errmsg(_db));
             return NULL;
@@ -202,6 +206,7 @@ static UIApplication *_YYSharedApplication() {
     return stmt;
 }
 
+//这个方法是根据keys的个数生成("?,?,?")这样的字符串
 - (NSString *)_dbJoinedKeys:(NSArray *)keys {
     NSMutableString *string = [NSMutableString new];
     for (NSUInteger i = 0,max = keys.count; i < max; i++) {
@@ -213,6 +218,7 @@ static UIApplication *_YYSharedApplication() {
     return string;
 }
 
+//sqlite3_bind_text 给sql语句绑定参数
 - (void)_dbBindJoinedKeys:(NSArray *)keys stmt:(sqlite3_stmt *)stmt fromIndex:(int)index{
     for (int i = 0, max = (int)keys.count; i < max; i++) {
         NSString *key = keys[i];
@@ -342,6 +348,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+//通过stmt
 - (YYKVStorageItem *)_dbGetItemFromStmt:(sqlite3_stmt *)stmt excludeInlineData:(BOOL)excludeInlineData {
     int i = 0;
     char *key = (char *)sqlite3_column_text(stmt, i++);
@@ -383,6 +390,8 @@ static UIApplication *_YYSharedApplication() {
     return item;
 }
 
+
+// 从数据库中查询keys对应的items excludeInlineData是否包含inline_data这个字段(从下面的sql语句中看出来)
 - (NSMutableArray *)_dbGetItemWithKeys:(NSArray *)keys excludeInlineData:(BOOL)excludeInlineData {
     if (![self _dbCheck]) return nil;
     NSString *sql;
@@ -393,22 +402,29 @@ static UIApplication *_YYSharedApplication() {
     }
     
     sqlite3_stmt *stmt = NULL;
+    //sqlite3_prepare_v2 将字符串转换成sql语句stmt
+    
     int result = sqlite3_prepare_v2(_db, sql.UTF8String, -1, &stmt, NULL);
+    
     if (result != SQLITE_OK) {
         if (_errorLogsEnabled) NSLog(@"%s line:%d sqlite stmt prepare error (%d): %s", __FUNCTION__, __LINE__, result, sqlite3_errmsg(_db));
         return nil;
     }
-    
+    //给sql语句绑定参数
     [self _dbBindJoinedKeys:keys stmt:stmt fromIndex:1];
+    
     NSMutableArray *items = [NSMutableArray new];
+    
     do {
+        //sqlite3_step 每次执行只能获取到结果集中的一行数据
         result = sqlite3_step(stmt);
         if (result == SQLITE_ROW) {
+            //从搜索结果中获取一行数据 生成一个YYKVStorageItem类型的item
             YYKVStorageItem *item = [self _dbGetItemFromStmt:stmt excludeInlineData:excludeInlineData];
             if (item) [items addObject:item];
-        } else if (result == SQLITE_DONE) {
+        } else if (result == SQLITE_DONE) { //sql执行完成跳出循环
             break;
-        } else {
+        } else {    //sql执行出错 跳出循环
             if (_errorLogsEnabled) NSLog(@"%s line:%d sqlite query error (%d): %s", __FUNCTION__, __LINE__, result, sqlite3_errmsg(_db));
             items = nil;
             break;
@@ -575,14 +591,20 @@ static UIApplication *_YYSharedApplication() {
 
 - (int)_dbGetItemCountWithKey:(NSString *)key {
     NSString *sql = @"select count(key) from manifest where key = ?1;";
+    //将sql转换成一个可执行的sql语句(sqlite3_stmt)
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
+    
     if (!stmt) return -1;
+    // 给这条prepared语句绑定参数
     sqlite3_bind_text(stmt, 1, key.UTF8String, -1, NULL);
+    //获取结果集中的每一行数据，从每一行数据中调用qlite3_column_xxx函数获取有用的列数据，直到结果集中所有的行都被处理完毕
     int result = sqlite3_step(stmt);
+    
     if (result != SQLITE_ROW) {
         if (_errorLogsEnabled) NSLog(@"%s line:%d sqlite query error (%d): %s", __FUNCTION__, __LINE__, result, sqlite3_errmsg(_db));
         return -1;
     }
+    //从每一行数据中调用qlite3_column_xxx函数获取有用的列数据，直到结果集中所有的行都被处理完毕。
     return sqlite3_column_int(stmt, 0);
 }
 
