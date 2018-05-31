@@ -313,6 +313,12 @@ static inline dispatch_queue_t YYMemoryCacheGetReleaseQueue() {
             usleep(10 * 1000); //10 ms
         }
     }
+    
+    /**
+     对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。
+     同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，
+     然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。
+     */
     if (holder.count) {
         dispatch_queue_t queue = _lru->_releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
         dispatch_async(queue, ^{

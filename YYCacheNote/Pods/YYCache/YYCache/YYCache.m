@@ -77,24 +77,31 @@
     return object;
 }
 
+// 获取key对应的对象 以block的形式返回给外部
 - (void)objectForKey:(NSString *)key withBlock:(void (^)(NSString *key, id<NSCoding> object))block {
     if (!block) return;
+    //先看一下内存中是否存在
     id<NSCoding> object = [_memoryCache objectForKey:key];
-    if (object) {
+    
+    if (object) { //如果内存中存在这个key对应的对象 直接返回给外部
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             block(key, object);
         });
-    } else {
+    } else {    // 如果内存中没有这个key对应的对象 那么在磁盘缓存中去查找
         [_diskCache objectForKey:key withBlock:^(NSString *key, id<NSCoding> object) {
+            //如果在磁盘中找到了这个key对应的对象但是内存中没有 那么将这个对象放到内存缓存中
             if (object && ![_memoryCache objectForKey:key]) {
                 [_memoryCache setObject:object forKey:key];
             }
+            //将找到的数据返回给外部 这里也有可能返回空
             block(key, object);
         }];
     }
 }
 
+// 保存key对应的object
 - (void)setObject:(id<NSCoding>)object forKey:(NSString *)key {
+    //同时在内存和磁盘中保存这个对象 这样不存在内存缓存中存在磁盘缓存中不存在的情况了
     [_memoryCache setObject:object forKey:key];
     [_diskCache setObject:object forKey:key];
 }
