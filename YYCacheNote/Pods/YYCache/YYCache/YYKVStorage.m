@@ -226,6 +226,7 @@ static UIApplication *_YYSharedApplication() {
     }
 }
 
+// 在manifest表中插入一条数据
 - (BOOL)_dbSaveWithKey:(NSString *)key value:(NSData *)value fileName:(NSString *)fileName extendedData:(NSData *)extendedData {
     NSString *sql = @"insert or replace into manifest (key, filename, size, inline_data, modification_time, last_access_time, extended_data) values (?1, ?2, ?3, ?4, ?5, ?6, ?7);";
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
@@ -252,6 +253,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+// 更新某个key对应的最后访问时间last_access_time
 - (BOOL)_dbUpdateAccessTimeWithKey:(NSString *)key {
     NSString *sql = @"update manifest set last_access_time = ?1 where key = ?2;";
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
@@ -266,6 +268,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+// 更新keys对应记录的last_access_time 最后访问时间
 - (BOOL)_dbUpdateAccessTimeWithKeys:(NSArray *)keys {
     if (![self _dbCheck]) return NO;
     int t = (int)time(NULL);
@@ -288,6 +291,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+// 删除key对应的记录
 - (BOOL)_dbDeleteItemWithKey:(NSString *)key {
     NSString *sql = @"delete from manifest where key = ?1;";
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
@@ -302,6 +306,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+// 通过keys去删除对应的数据
 - (BOOL)_dbDeleteItemWithKeys:(NSArray *)keys {
     if (![self _dbCheck]) return NO;
     NSString *sql =  [NSString stringWithFormat:@"delete from manifest where key in (%@);", [self _dbJoinedKeys:keys]];
@@ -322,6 +327,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+//删除文件大小大于size的数据 size
 - (BOOL)_dbDeleteItemsWithSizeLargerThan:(int)size {
     NSString *sql = @"delete from manifest where size > ?1;";
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
@@ -335,6 +341,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
+//删除time之前的数据 这里使用的是 last_access_time
 - (BOOL)_dbDeleteItemsWithTimeEarlierThan:(int)time {
     NSString *sql = @"delete from manifest where last_access_time < ?1;";
     sqlite3_stmt *stmt = [self _dbPrepareStmt:sql];
@@ -348,7 +355,7 @@ static UIApplication *_YYSharedApplication() {
     return YES;
 }
 
-//通过stmt
+//通过stmt获取的一行数据 去创建一个YYKVStorageItem类型的模型然后填充一下这个模型
 - (YYKVStorageItem *)_dbGetItemFromStmt:(sqlite3_stmt *)stmt excludeInlineData:(BOOL)excludeInlineData {
     int i = 0;
     char *key = (char *)sqlite3_column_text(stmt, i++);
