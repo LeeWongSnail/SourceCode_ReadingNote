@@ -464,3 +464,22 @@ autoTrimInterval | 默认60单位s 递归检测磁盘缓存的时间间隔
 以上就是对于YYCache的解析,下面总结一下YYCache中的一些值得学习的地方
 
 
+## 内存缓存
+
+### 使用双向链表管理内存缓存
+
+### 对象销毁后台线程
+
+### 对象总空间/对象总个数/对象时长
+
+### 锁的使用
+pthread_mutex_lock、pthread_mutex_unlock
+
+### 后台递归检索_trimRecursively
+
+## 磁盘缓存
+
+### 对象总空间/对象总个数/对象时长/限制总的APP所占磁盘空间
+
+### 后台递归检索_trimRecursively
+
