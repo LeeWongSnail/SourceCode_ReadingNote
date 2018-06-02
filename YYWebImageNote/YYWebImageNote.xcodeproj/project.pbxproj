@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		32CCE6E6DCB74C3428CF281E /* libPods-YYWebImageNoteTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B99745CFADBEE5FFB2514F53 /* libPods-YYWebImageNoteTests.a */; };
+		5A4C8648888E1DAF94AAF56C /* libPods-YYWebImageNote.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 80F46CFCDA3B97EC43D7C6C8 /* libPods-YYWebImageNote.a */; };
 		EB5EDD4B20C233DF00004A53 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD4A20C233DF00004A53 /* AppDelegate.m */; };
 		EB5EDD4E20C233DF00004A53 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD4D20C233DF00004A53 /* ViewController.m */; };
 		EB5EDD5120C233DF00004A53 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB5EDD4F20C233DF00004A53 /* Main.storyboard */; };
@@ -15,6 +17,7 @@
 		EB5EDD5920C233E100004A53 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD5820C233E100004A53 /* main.m */; };
 		EB5EDD6320C233E100004A53 /* YYWebImageNoteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD6220C233E100004A53 /* YYWebImageNoteTests.m */; };
 		EB5EDD6E20C233E100004A53 /* YYWebImageNoteUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD6D20C233E100004A53 /* YYWebImageNoteUITests.m */; };
+		FDF1251171780F390A918B4F /* libPods-YYWebImageNoteUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 91844F63DDCF4DA6B5B6266B /* libPods-YYWebImageNoteUITests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +38,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		413B741F9439EF3AA68384B7 /* Pods-YYWebImageNoteTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNoteTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNoteTests/Pods-YYWebImageNoteTests.debug.xcconfig"; sourceTree = "<group>"; };
+		49912162A3EC50ABD58EF983 /* Pods-YYWebImageNoteUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNoteUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNoteUITests/Pods-YYWebImageNoteUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		5EDF4E32702E9E68DEF39F75 /* Pods-YYWebImageNoteTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNoteTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNoteTests/Pods-YYWebImageNoteTests.release.xcconfig"; sourceTree = "<group>"; };
+		80F46CFCDA3B97EC43D7C6C8 /* libPods-YYWebImageNote.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YYWebImageNote.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8278E1689F65DAE3E13D1277 /* Pods-YYWebImageNoteUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNoteUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNoteUITests/Pods-YYWebImageNoteUITests.release.xcconfig"; sourceTree = "<group>"; };
+		91844F63DDCF4DA6B5B6266B /* libPods-YYWebImageNoteUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YYWebImageNoteUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB1A47044A3EEC8B603A9CDA /* Pods-YYWebImageNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNote.debug.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNote/Pods-YYWebImageNote.debug.xcconfig"; sourceTree = "<group>"; };
+		B3ED2BE9AF432ABAD4F5035D /* Pods-YYWebImageNote.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YYWebImageNote.release.xcconfig"; path = "Pods/Target Support Files/Pods-YYWebImageNote/Pods-YYWebImageNote.release.xcconfig"; sourceTree = "<group>"; };
+		B99745CFADBEE5FFB2514F53 /* libPods-YYWebImageNoteTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YYWebImageNoteTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB5EDD4620C233DF00004A53 /* YYWebImageNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YYWebImageNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB5EDD4920C233DF00004A53 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EB5EDD4A20C233DF00004A53 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -58,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A4C8648888E1DAF94AAF56C /* libPods-YYWebImageNote.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32CCE6E6DCB74C3428CF281E /* libPods-YYWebImageNoteTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +86,36 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDF1251171780F390A918B4F /* libPods-YYWebImageNoteUITests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		06A9985D0E0D661BEB47CD1A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				80F46CFCDA3B97EC43D7C6C8 /* libPods-YYWebImageNote.a */,
+				B99745CFADBEE5FFB2514F53 /* libPods-YYWebImageNoteTests.a */,
+				91844F63DDCF4DA6B5B6266B /* libPods-YYWebImageNoteUITests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A173A4DD6577A2F21AA6A25F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AB1A47044A3EEC8B603A9CDA /* Pods-YYWebImageNote.debug.xcconfig */,
+				B3ED2BE9AF432ABAD4F5035D /* Pods-YYWebImageNote.release.xcconfig */,
+				413B741F9439EF3AA68384B7 /* Pods-YYWebImageNoteTests.debug.xcconfig */,
+				5EDF4E32702E9E68DEF39F75 /* Pods-YYWebImageNoteTests.release.xcconfig */,
+				49912162A3EC50ABD58EF983 /* Pods-YYWebImageNoteUITests.debug.xcconfig */,
+				8278E1689F65DAE3E13D1277 /* Pods-YYWebImageNoteUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		EB5EDD3D20C233DF00004A53 = {
 			isa = PBXGroup;
 			children = (
@@ -85,6 +123,8 @@
 				EB5EDD6120C233E100004A53 /* YYWebImageNoteTests */,
 				EB5EDD6C20C233E100004A53 /* YYWebImageNoteUITests */,
 				EB5EDD4720C233DF00004A53 /* Products */,
+				A173A4DD6577A2F21AA6A25F /* Pods */,
+				06A9985D0E0D661BEB47CD1A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -139,9 +179,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB5EDD7220C233E100004A53 /* Build configuration list for PBXNativeTarget "YYWebImageNote" */;
 			buildPhases = (
+				259B0E146A314F66D4D4CD26 /* [CP] Check Pods Manifest.lock */,
 				EB5EDD4220C233DF00004A53 /* Sources */,
 				EB5EDD4320C233DF00004A53 /* Frameworks */,
 				EB5EDD4420C233DF00004A53 /* Resources */,
+				4C1AF328B7F95687736CA2EE /* [CP] Embed Pods Frameworks */,
+				D982E71D0E14A92AF5F3B50A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -156,9 +199,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB5EDD7520C233E100004A53 /* Build configuration list for PBXNativeTarget "YYWebImageNoteTests" */;
 			buildPhases = (
+				67DD8A6D85EF34D06EAC63BC /* [CP] Check Pods Manifest.lock */,
 				EB5EDD5A20C233E100004A53 /* Sources */,
 				EB5EDD5B20C233E100004A53 /* Frameworks */,
 				EB5EDD5C20C233E100004A53 /* Resources */,
+				A75D4F2249DC6BEE3D4D37A2 /* [CP] Embed Pods Frameworks */,
+				49EE4932CCAD05B3CB3689EB /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -174,9 +220,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB5EDD7820C233E100004A53 /* Build configuration list for PBXNativeTarget "YYWebImageNoteUITests" */;
 			buildPhases = (
+				9D99C5DE94A1C5A89A73BDF1 /* [CP] Check Pods Manifest.lock */,
 				EB5EDD6520C233E100004A53 /* Sources */,
 				EB5EDD6620C233E100004A53 /* Frameworks */,
 				EB5EDD6720C233E100004A53 /* Resources */,
+				12360A6478CE077C68073127 /* [CP] Embed Pods Frameworks */,
+				37942E49C78A18D737DCB067 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -256,6 +305,144 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		12360A6478CE077C68073127 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNoteUITests/Pods-YYWebImageNoteUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		259B0E146A314F66D4D4CD26 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		37942E49C78A18D737DCB067 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNoteUITests/Pods-YYWebImageNoteUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		49EE4932CCAD05B3CB3689EB /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNoteTests/Pods-YYWebImageNoteTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4C1AF328B7F95687736CA2EE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNote/Pods-YYWebImageNote-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		67DD8A6D85EF34D06EAC63BC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		9D99C5DE94A1C5A89A73BDF1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		A75D4F2249DC6BEE3D4D37A2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNoteTests/Pods-YYWebImageNoteTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D982E71D0E14A92AF5F3B50A /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-YYWebImageNote/Pods-YYWebImageNote-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		EB5EDD4220C233DF00004A53 /* Sources */ = {
@@ -431,15 +618,13 @@
 		};
 		EB5EDD7320C233E100004A53 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB1A47044A3EEC8B603A9CDA /* Pods-YYWebImageNote.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNote/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNote;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -448,15 +633,13 @@
 		};
 		EB5EDD7420C233E100004A53 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B3ED2BE9AF432ABAD4F5035D /* Pods-YYWebImageNote.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNote/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNote;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -465,16 +648,13 @@
 		};
 		EB5EDD7620C233E100004A53 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 413B741F9439EF3AA68384B7 /* Pods-YYWebImageNoteTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -484,16 +664,13 @@
 		};
 		EB5EDD7720C233E100004A53 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5EDF4E32702E9E68DEF39F75 /* Pods-YYWebImageNoteTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -503,15 +680,12 @@
 		};
 		EB5EDD7920C233E100004A53 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 49912162A3EC50ABD58EF983 /* Pods-YYWebImageNoteUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -521,15 +695,12 @@
 		};
 		EB5EDD7A20C233E100004A53 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8278E1689F65DAE3E13D1277 /* Pods-YYWebImageNoteUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
