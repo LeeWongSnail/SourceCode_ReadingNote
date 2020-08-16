@@ -14,16 +14,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- An image view for displaying animated image.
  
- @discussion It is a fully compatible `UIImageView` subclass.
- If the `image` or `highlightedImage` property adopt to the `YYAnimatedImage` protocol,
- then it can be used to play the multi-frame animation. The animation can also be 
- controlled with the UIImageView methods `-startAnimating`, `-stopAnimating` and `-isAnimating`.
+ 一个用来显示动图的ImageView
  
- This view request the frame data just in time. When the device has enough free memory, 
- this view may cache some or all future frames in an inner buffer for lower CPU cost.
- Buffer size is dynamically adjusted based on the current state of the device memory.
+ @discussion
+ 与UIImageView的子类完全兼容
+ 如果image或者highlightedImage属性遵守了YYAnimatedImage协议,那么他可以用来播放多帧动画。
+ 动画也可以通过UIImageView的`-startAnimating`, `-stopAnimating`  `-isAnimating` 三个方法控制
+ 
+ 
+ 当设备有足够的空闲内存时，这个view会及时的请求帧数据。为了降低CPU利用率,这个view可能会在内部的buffer中缓存部分或者所有的帧。
+ buffer的大小是根据当前设备内存状态进行动态哦调整
  
  Sample Code:
  
@@ -35,48 +36,43 @@ NS_ASSUME_NONNULL_BEGIN
 @interface YYAnimatedImageView : UIImageView
 
 /**
- If the image has more than one frame, set this value to `YES` will automatically 
- play/stop the animation when the view become visible/invisible.
+ 如果这个图片包含不止一帧,当这个属性被设置为YES的时候，那么当这个view可见的时候会自动开始不可见的时候自动停止
  
- The default value is `YES`.
+ 默认是YES
  */
 @property (nonatomic) BOOL autoPlayAnimatedImage;
 
 /**
- Index of the currently displayed frame (index from 0).
+ 当前展示的是第几帧
  
- Set a new value to this property will cause to display the new frame immediately.
- If the new value is invalid, this method has no effect.
+ 设置这个属性会使YYAnimatedImageView立刻展示新的帧图片 如果新值非法这个操作没有影响
  
- You can add an observer to this property to observe the playing status.
+ 你可以通过添加一个监听者来观察播放的状态
  */
 @property (nonatomic) NSUInteger currentAnimatedImageIndex;
 
 /**
- Whether the image view is playing animation currently.
+ YYAnimatedImageView当前是否正在执行动画
  
- You can add an observer to this property to observe the playing status.
+  你可以通过添加一个监听者来观察播放的状态
  */
 @property (nonatomic, readonly) BOOL currentIsPlayingAnimation;
 
 /**
- The animation timer's runloop mode, default is `NSRunLoopCommonModes`.
+ 这个动画定时器的runloopMode 默认是NSRunLoopCommonModes
  
- Set this property to `NSDefaultRunLoopMode` will make the animation pause during
- UIScrollView scrolling.
+ 如果设置成NSDefaultRunLoopMode 那么当UIScrollView 滚动的时候YYAnimatedImageView动画会停止
  */
 @property (nonatomic, copy) NSString *runloopMode;
 
 /**
- The max size (in bytes) for inner frame buffer size, default is 0 (dynamically).
+ inner frame buffer 的最大值 默认是0
+ 当设备有足够的空闲内存时,YYAnimatedImageView会请求解码部分或者所有的帧图到buffer中。如果这个值设置的是0
+ 那么buffersize的最大值会根据当前设备空闲内存的状态动态调整。否则buffer size会根据这个设定的值做限制
  
- When the device has enough free memory, this view will request and decode some or 
- all future frame image into an inner buffer. If this property's value is 0, then 
- the max buffer size will be dynamically adjusted based on the current state of 
- the device free memory. Otherwise, the buffer size will be limited by this value.
- 
- When receive memory warning or app enter background, the buffer will be released 
- immediately, and may grow back at the right time.
+
+ 当应用进入后台或者受到内存警告时,这个buffer会立刻被释放,然后在合适的时间恢复
+
  */
 @property (nonatomic) NSUInteger maxBufferSize;
 
@@ -85,13 +81,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /**
- The YYAnimatedImage protocol declares the required methods for animated image
- display with YYAnimatedImageView.
+ YYAnimatedImage协议声明了使用YYAnimatedImageView展示动图的一些必要方法
+
  
- Subclass a UIImage and implement this protocol, so that instances of that class 
- can be set to YYAnimatedImageView.image or YYAnimatedImageView.highlightedImage
- to display animation.
- 
+ UIImage的子类实现了这个协议,那么这个子类的对象就可以通过设置YYAnimatedImageView.image或者
+ YYAnimatedImageView.highlightedImage来展示动画
+
+
  See `YYImage` and `YYFrameImage` for example.
  */
 @protocol YYAnimatedImage <NSObject>

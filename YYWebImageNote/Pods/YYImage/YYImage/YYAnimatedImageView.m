@@ -14,8 +14,9 @@
 #import <pthread.h>
 #import <mach/mach.h>
 
-
+// 最小的buffer size
 #define BUFFER_SIZE (10 * 1024 * 1024) // 10MB (minimum memory buffer size)
+
 
 #define LOCK(...) dispatch_semaphore_wait(self->_lock, DISPATCH_TIME_FOREVER); \
 __VA_ARGS__; \
@@ -26,12 +27,14 @@ __VA_ARGS__; \
 dispatch_semaphore_signal(view->_lock);
 
 
+// 设备的总屋里内存
 static int64_t _YYDeviceMemoryTotal() {
     int64_t mem = [[NSProcessInfo processInfo] physicalMemory];
     if (mem < -1) mem = -1;
         return mem;
 }
 
+// 设备的空闲内存
 static int64_t _YYDeviceMemoryFree() {
     mach_port_t host_port = mach_host_self();
     mach_msg_type_number_t host_size = sizeof(vm_statistics_data_t) / sizeof(integer_t);

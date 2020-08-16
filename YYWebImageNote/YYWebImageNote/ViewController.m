@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import "ProxyObject.h"
+#import "NormalObject.h"
 
 @interface ViewController ()
 
@@ -17,6 +19,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+    NSString *str = [NSString stringWithFormat:@"this is a word"];
+    ProxyObject *proxyA = [[ProxyObject alloc] initWithObject:str];
+    NormalObject *proxyB = [[NormalObject alloc] initWithObject:str];
+    
+    
+//    NSLog(@"%d", [proxyA respondsToSelector:@selector(length)]);
+//    NSLog(@"%d", [proxyB respondsToSelector:@selector(length)]);
+//
+//    NSLog(@"%d", [proxyA isKindOfClass:[NSString class]]);
+//    NSLog(@"%d", [proxyB isKindOfClass:[NSString class]]);
+    
+    [proxyA isEqual:str];
 }
 
 

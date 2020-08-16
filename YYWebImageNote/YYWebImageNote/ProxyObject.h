@@ -9,5 +9,5 @@
 #import <Foundation/Foundation.h>
 
 @interface ProxyObject : NSProxy
-
+- (instancetype)initWithObject:(id)object;
 @end

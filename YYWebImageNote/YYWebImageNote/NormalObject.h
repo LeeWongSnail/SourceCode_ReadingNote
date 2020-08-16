@@ -9,5 +9,6 @@
 #import <Foundation/Foundation.h>
 
 @interface NormalObject : NSObject
+- (instancetype)initWithObject:(id)object;
 
 @end

@@ -17,6 +17,8 @@
 		EB5EDD5920C233E100004A53 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD5820C233E100004A53 /* main.m */; };
 		EB5EDD6320C233E100004A53 /* YYWebImageNoteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD6220C233E100004A53 /* YYWebImageNoteTests.m */; };
 		EB5EDD6E20C233E100004A53 /* YYWebImageNoteUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD6D20C233E100004A53 /* YYWebImageNoteUITests.m */; };
+		EB5EDD7D20C2780C00004A53 /* ProxyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD7C20C2780C00004A53 /* ProxyObject.m */; };
+		EB5EDD8020C27B1600004A53 /* NormalObject.m in Sources */ = {isa = PBXBuildFile; fileRef = EB5EDD7F20C27B1600004A53 /* NormalObject.m */; };
 		FDF1251171780F390A918B4F /* libPods-YYWebImageNoteUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 91844F63DDCF4DA6B5B6266B /* libPods-YYWebImageNoteUITests.a */; };
 /* End PBXBuildFile section */
 
@@ -63,6 +65,10 @@
 		EB5EDD6920C233E100004A53 /* YYWebImageNoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YYWebImageNoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB5EDD6D20C233E100004A53 /* YYWebImageNoteUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YYWebImageNoteUITests.m; sourceTree = "<group>"; };
 		EB5EDD6F20C233E100004A53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB5EDD7B20C2780C00004A53 /* ProxyObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProxyObject.h; sourceTree = "<group>"; };
+		EB5EDD7C20C2780C00004A53 /* ProxyObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProxyObject.m; sourceTree = "<group>"; };
+		EB5EDD7E20C27B1600004A53 /* NormalObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NormalObject.h; sourceTree = "<group>"; };
+		EB5EDD7F20C27B1600004A53 /* NormalObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NormalObject.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +156,10 @@
 				EB5EDD5420C233E100004A53 /* LaunchScreen.storyboard */,
 				EB5EDD5720C233E100004A53 /* Info.plist */,
 				EB5EDD5820C233E100004A53 /* main.m */,
+				EB5EDD7B20C2780C00004A53 /* ProxyObject.h */,
+				EB5EDD7C20C2780C00004A53 /* ProxyObject.m */,
+				EB5EDD7E20C27B1600004A53 /* NormalObject.h */,
+				EB5EDD7F20C27B1600004A53 /* NormalObject.m */,
 			);
 			path = YYWebImageNote;
 			sourceTree = "<group>";
@@ -450,6 +460,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB5EDD4E20C233DF00004A53 /* ViewController.m in Sources */,
+				EB5EDD7D20C2780C00004A53 /* ProxyObject.m in Sources */,
+				EB5EDD8020C27B1600004A53 /* NormalObject.m in Sources */,
 				EB5EDD5920C233E100004A53 /* main.m in Sources */,
 				EB5EDD4B20C233DF00004A53 /* AppDelegate.m in Sources */,
 			);
@@ -624,7 +636,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNote/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNote;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -639,7 +654,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNote/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNote;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -654,7 +672,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -670,7 +692,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -685,7 +711,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -700,7 +730,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XWNPFKK4U5;
 				INFOPLIST_FILE = YYWebImageNoteUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.YYWebImageNoteUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
