@@ -744,6 +744,8 @@ enum { CacheLineSize = 64 };
 // for cache-friendly lock striping. 
 // For example, this may be used as StripedMap<spinlock_t>
 // or as StripedMap<SomeStruct> where SomeStruct stores a spin lock.
+// StripedMap<T> 是一个模板类，根据传递的实际参数决定其中 array 成员存储的元素类型
+// 能通过对象的地址，运算出 Hash 值，通过该 hash 值找到对应的 value
 template<typename T>
 class StripedMap {
 #if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
@@ -751,22 +753,28 @@ class StripedMap {
 #else
     enum { StripeCount = 64 };
 #endif
-
+    // PaddedT 为一个结构体
     struct PaddedT {
         T value alignas(CacheLineSize);
     };
 
+    // array 中存放着8个sidetable
     PaddedT array[StripeCount];
-
+    //取得p的哈希值，p就是实例对象的地址
     static unsigned int indexForPointer(const void *p) {
         uintptr_t addr = reinterpret_cast<uintptr_t>(p);
+        // 这里根据对象的地址经过左移和异或操作 最终结果 模 8 得到一个0-7的值
+        // 即对应该地址对应array中下标的sidetable中
         return ((addr >> 4) ^ (addr >> 9)) % StripeCount;
     }
 
  public:
+    // 重写了[]方法 即通过下标获取数组中对应下标的值
+    // array[index] = array[indexForPointer(p)].value
     T& operator[] (const void *p) { 
         return array[indexForPointer(p)].value; 
     }
+
     const T& operator[] (const void *p) const { 
         return const_cast<StripedMap<T>>(this)[p]; 
     }

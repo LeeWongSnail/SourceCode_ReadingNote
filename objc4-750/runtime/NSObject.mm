@@ -81,8 +81,10 @@ namespace {
 #define SIDE_TABLE_RC_SHIFT 2
 #define SIDE_TABLE_FLAG_MASK (SIDE_TABLE_RC_ONE-1)
 
-// RefcountMap disguises its pointers because we 
-// don't want the table to act as a root for `leaks`.
+// RefcountMap 是一个模板类
+// key,DisguisedPtr<objc_object>类型
+// value，size_t类型
+// 是否清除为vlaue==0的数据，true
 typedef objc::DenseMap<DisguisedPtr<objc_object>,size_t,true> RefcountMap;
 
 // Template parameters.
@@ -158,10 +160,11 @@ void SideTable::unlockTwo<DontHaveOld, DoHaveNew>
 }
 
 
-// We cannot use a C++ static initializer to initialize SideTables because
-// libc calls us before our C++ initializers run. We also don't want a global 
-// pointer to this struct because of the extra indirection.
-// Do it the hard way.
+//alignas 字节对齐
+// SideTableBuf 静态全局变量
+// sizeof(StripedMap<SideTable>) = 4096
+//alignas (StripedMap<SideTable>) 是字节对齐的意思，表示让数组中每一个元素的起始位置对齐到4096的倍数
+// 因此下面这句话可以翻译为 static uint8_t SideTableBuf[4096]
 alignas(StripedMap<SideTable>) static uint8_t 
     SideTableBuf[sizeof(StripedMap<SideTable>)];
 
@@ -1408,13 +1411,14 @@ size_t  objc_object::sidetable_subExtraRC_nolock(size_t delta_rc)
 size_t 
 objc_object::sidetable_getExtraRC_nolock()
 {
-	//不是联合体技术 则报错
+	//
     assert(isa.nonpointer);
 	//key是 this，存储了每个对象的table
     SideTable& table = SideTables()[this];
 	//找到 it 否则返回0
     RefcountMap::iterator it = table.refcnts.find(this);
     if (it == table.refcnts.end()) return 0;
+    // 取到引用计数 右移2位
     else return it->second >> SIDE_TABLE_RC_SHIFT;
 }
 

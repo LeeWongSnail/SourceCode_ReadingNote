@@ -78,17 +78,27 @@ typedef DisguisedPtr<objc_object *> weak_referrer_t;
 #define REFERRERS_OUT_OF_LINE 2
 
 struct weak_entry_t {
+    // 被弱引用的对象
     DisguisedPtr<objc_object> referent;
+    // 联合结构 两种结构共同占用一块内存空间 两种结构互斥
     union {
+        // 弱引用 被弱引用对象的列表
         struct {
+            // 弱引用该对象的对象列表的动态数组
             weak_referrer_t *referrers;
+            // 是否使用动态数组标记位
             uintptr_t        out_of_line_ness : 2;
+            // 动态数组中元素的个数
             uintptr_t        num_refs : PTR_MINUS_2;
+            // 用于hash确定动态数组index，值实际上是动态数组空间长度-1（它和num_refs不一样，
+            // 这里是记录的是数组中位置的个数，而不是数组中实际存储的元素个数）。
             uintptr_t        mask;
+            // 最大的hash冲突次数（说明了最多做max_hash_displacement次hash冲突，肯定会找到对应的数据）
             uintptr_t        max_hash_displacement;
         };
         struct {
-            // out_of_line_ness field is low bits of inline_referrers[1]
+            // inline_referrers 数组 当不使用动态数组时使用 最大个数为4
+            // #define WEAK_INLINE_COUNT 4
             weak_referrer_t  inline_referrers[WEAK_INLINE_COUNT];
         };
     };
@@ -117,9 +127,14 @@ struct weak_entry_t {
  * and weak_entry_t structs as their values.
  */
 struct weak_table_t {
+    // weak_entries一个数组，数组每个元素是 weak_entry_t 结构体，
+    // 一个weak_entry_t结构存储了一个reffenent，以及指向reffenent的弱引用者们。
     weak_entry_t *weak_entries;
+    // num_entries 是实体（weak_entry_t）的数量
     size_t    num_entries;
+    // mask是容量减1.
     uintptr_t mask;
+    // 允许出现的最大哈希冲突次数
     uintptr_t max_hash_displacement;
 };
 

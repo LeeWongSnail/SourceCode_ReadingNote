@@ -719,12 +719,13 @@ objc_object::rootAutorelease()
 }
 
 
+// 获取一个对象的retainCount
 inline uintptr_t 
 objc_object::rootRetainCount()
 {
 	//优化指针 直接返回
     if (isTaggedPointer()) return (uintptr_t)this;
-//没优化则 到SideTable 读取
+    //没优化则 到SideTable 读取
     sidetable_lock();
 	//isa指针
     isa_t bits = LoadExclusive(&isa.bits);
