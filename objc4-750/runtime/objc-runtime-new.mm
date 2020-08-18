@@ -6664,6 +6664,7 @@ object_copyFromZone(id oldObj, size_t extraBytes, void *zone)
 * Removes associative references.
 * Returns `obj`. Does nothing if `obj` is nil.
 **********************************************************************/
+
 void *objc_destructInstance(id obj) 
 {
     if (obj) {
@@ -6673,9 +6674,14 @@ void *objc_destructInstance(id obj)
 		//关联函数
         bool assoc = obj->hasAssociatedObjects();
 
-        // This order is important.
-        if (cxx) object_cxxDestruct(obj);
-        if (assoc) _object_remove_assocations(obj);
+        // 如果有c++析构函数 则调用c++析构函数.
+        if (cxx)
+            object_cxxDestruct(obj);
+
+        // 如果有关联对象则移除关联对象
+        if (assoc)
+            _object_remove_assocations(obj);
+        // 清理相关的引用
         obj->clearDeallocating();
     }
 
@@ -6692,8 +6698,9 @@ id
 object_dispose(id obj)
 {
     if (!obj) return nil;
-
-    objc_destructInstance(obj);    
+    // 析构obj
+    objc_destructInstance(obj);
+    // 释放内存
     free(obj);
 
     return nil;

@@ -268,10 +268,12 @@ enum CrashIfDeallocating {
 };
 template <HaveOld haveOld, HaveNew haveNew,
           CrashIfDeallocating crashIfDeallocating>
-// HaveOld= true 对于已经赋值的变量需要先清空
-// haveNew = true 有一个新值需要被赋值给这个变量
-// crashIfDeallocating = true 这个过程会被终止如果newObj正在被销毁或者newObj的类不支持弱引用
+// HaveOld= true weak ptr之前是否已经指向了一个弱引用
+// haveNew = true weak ptr是否需要指向一个新引用
+// crashIfDeallocating = true 如果被弱引用的对象正在析构，此时再弱引用该对象，是否应该crash
 // crashIfDeallocating = false 将存储的数据置为nil
+// *location 代表weak 指针的地址
+// newObj 被weak引用的对象。
 static id 
 storeWeak(id *location, objc_object *newObj)
 {
@@ -288,29 +290,29 @@ storeWeak(id *location, objc_object *newObj)
 
 
  retry:
-    // 如果有旧值
+    // 如果weak ptr之前弱引用过一个obj，则将这个obj所对应的SideTable取出，赋值给oldTable
     if (haveOld) {
         // 根据传入的地址获取到旧的值
         oldObj = *location;
         // 根据旧值的地址获取到旧值所存在的SideTable
         oldTable = &SideTables()[oldObj];
     } else {
-        // 如果没有旧值那么初始化为空
+        // 如果weak ptr之前没有弱引用过一个obj，则oldTable = nil
         oldTable = nil;
     }
     // 是否有新值 如果有
     if (haveNew) {
-        // 根据新值的地址获取新值应该存放在的SideTable
+        // 如果weak ptr要weak引用一个新的obj，则将该obj对应的SideTable取出，赋值给newTable
         newTable = &SideTables()[newObj];
     } else {
-        // 新值的SideTable为空
+        // 如果weak ptr不需要引用一个新obj，则newTable = nil
         newTable = nil;
     }
 
-    // 加锁管理一对 side tables
+    // 加锁管理一对 side tables，防止多线程中竞争冲突
     SideTable::lockTwo<haveOld, haveNew>(oldTable, newTable);
 
-    // 当前 *location != oldObj，说明 oldObj 已经处理过（haveOld 为 true），但是又被其他线程修改
+    // location 应该与 oldObj 保持一致，如果不同，说明当前的 location 已经处理过 oldObj 可是又被其他线程所修改
     if (haveOld  &&  *location != oldObj) {
         // 解锁后重试
         SideTable::unlockTwo<haveOld, haveNew>(oldTable, newTable);
@@ -322,7 +324,7 @@ storeWeak(id *location, objc_object *newObj)
     // 方法中用到对象的 isa 还没有初始化完成的情况
     if (haveNew  &&  newObj) {
         Class cls = newObj->getIsa();
-        //  isa 非空但未初始化完成
+        // 如果cls还没有初始化，先初始化，再尝试设置weak
         if (cls != previouslyInitializedClass  &&  
             !((objc_class *)cls)->isInitialized()) 
         {
@@ -332,39 +334,40 @@ storeWeak(id *location, objc_object *newObj)
 
             // 如果该类还没有初始化完成，例如在 +initialize 中调用了 storeWeak 方法，
             // 也就是会进入这里面，进而设置  previouslyInitializedClass  以在重试时识别它
+            // 这里记录一下previouslyInitializedClass， 防止改if分支再次进入
             previouslyInitializedClass = cls;
-
+            // 重新获取一遍newObj，这时的newObj应该已经初始化过了
             goto retry;
         }
     }
 
-    // 清除旧值
+    // 如果weak_ptr之前弱引用过别的对象oldObj，则调用weak_unregister_no_lock，在oldObj的weak_entry_t中移除该weak_ptr地址
     if (haveOld) {
         weak_unregister_no_lock(&oldTable->weak_table, oldObj, location);
     }
 
-    // 分配新值
+    // 如果weak_ptr需要弱引用新的对象newObj
     if (haveNew) {
+        // (1) 调用weak_register_no_lock方法，将weak ptr的地址记录到newObj对应的weak_entry_t中
         newObj = (objc_object *)
             weak_register_no_lock(&newTable->weak_table, (id)newObj, location, 
                                   crashIfDeallocating);
-        // weak_register_no_lock returns nil if weak store should be rejected
 
-        // Set is-weakly-referenced bit in refcount table.
-        // 在引用计数表中设置标志位
+        // (2) 更新newObj的isa的weakly_referenced bit标志位
         if (newObj  &&  !newObj->isTaggedPointer()) {
             newObj->setWeaklyReferenced_nolock();
         }
 
-        // 将指针指向的对象设置为新对象
+        // （3）*location 赋值，也就是将weak ptr直接指向了newObj。可以看到，这里并没有将newObj的引用计数+1
+        // 将weak ptr指向object
         *location = (id)newObj;
     }
     else {
         // No new value. The storage is not changed.
     }
-    // 解锁
+    // 解锁，其他线程可以访问oldTable, newTable了
     SideTable::unlockTwo<haveOld, haveNew>(oldTable, newTable);
-
+    // 返回newObj，此时的newObj与刚传入时相比，weakly-referenced bit位置1
     return (id)newObj;
 }
 
@@ -1246,21 +1249,23 @@ objc_object::rootRelease_underflow(bool performDealloc)
 // for objects with nonpointer isa
 // that were ever weakly referenced 
 // or whose retain count ever overflowed to the side table.
+
 NEVER_INLINE void
 objc_object::clearDeallocating_slow()
 {
     assert(isa.nonpointer  &&  (isa.weakly_referenced || isa.has_sidetable_rc));
 
+    // 在全局的SideTables中，以this指针为key，找到对应的SideTable
     SideTable& table = SideTables()[this];
     table.lock();
-	//清除weak
+	//// 如果obj被弱引用
     if (isa.weakly_referenced) {
-		//table.weak_table 弱引用表
+		//// 在SideTable的weak_table中对this进行清理工作
         weak_clear_no_lock(&table.weak_table, (id)this);
     }
-	//引用计数
+	// 如果采用了SideTable做引用计数
     if (isa.has_sidetable_rc) {
-		//擦除 this
+		//在SideTable的引用计数中移除this
         table.refcnts.erase(this);
     }
     table.unlock();
@@ -1599,7 +1604,7 @@ objc_object::sidetable_release(bool performDealloc)
     return do_dealloc;
 }
 
-
+// sidetable清空
 void 
 objc_object::sidetable_clearDeallocating()
 {
