@@ -6,9 +6,6 @@
 //
 
 #import "AppDelegate.h"
-#import "FYLogCenter.h"
-#import "ViewController.h"
-#import "ViewController2.h"
 
 
 @interface AppDelegate ()
@@ -20,27 +17,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-//    [ViewController fyaspect_hookClass:ViewController.class
-//                          WithSelector:@selector(viewDidLoad)
-//                           withOptions:AspectPositionAfter
-//                            usingBlock:^(){
-//                                NSLog(@"viewcontroller class after");
-//        
-//    } error:nil];
-//    [ViewController fyaspect_hookClass:ViewController.class
-//                          WithSelector:@selector(viewDidLoad)
-//                           withOptions:AspectPositionAfter
-//                            usingBlock:^(){
-//                                NSLog(@"viewcontroller class after2");
-//                                
-//                            } error:nil];
-//    [ViewController fyaspect_hookClass:ViewController.class
-//                          WithSelector:@selector(viewDidLoad)
-//                           withOptions:AspectPositionBefore
-//                            usingBlock:^(){
-//                                NSLog(@"viewcontroller class AspectPositionBefore");
-//                                
-//                            } error:nil];
+
     
     return YES;
 }
