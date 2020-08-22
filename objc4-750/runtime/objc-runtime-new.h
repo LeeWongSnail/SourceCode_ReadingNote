@@ -1391,22 +1391,29 @@ struct swift_class_t : objc_class {
     }
 };
 
-
+// 分类
 struct category_t {
+    // 是指 class_name 而不是 category_name
     const char *name;
+    // 要扩展的类对象，编译期间是不会定义的，而是在运行时通过 * name 对应到对应的类对象。
     classref_t cls;
+    // 对象方法列表
     struct method_list_t *instanceMethods;
+    // 类方法列表
     struct method_list_t *classMethods;
+    // 协议列表
     struct protocol_list_t *protocols;
+    // 实例属性
     struct property_list_t *instanceProperties;
     // Fields below this point are not always present on disk.
+    // 类属性(这个结构体以_开头命名？？？)
     struct property_list_t *_classProperties;
-
+    // methodsForMeta 返回类方法列表或者对象方法列表
     method_list_t *methodsForMeta(bool isMeta) {
         if (isMeta) return classMethods;
         else return instanceMethods;
     }
-
+    // 属性列表返回方法
     property_list_t *propertiesForMeta(bool isMeta, struct header_info *hi);
 };
 
