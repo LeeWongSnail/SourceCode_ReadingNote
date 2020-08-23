@@ -9,13 +9,14 @@
 
 @implementation PrimaryObject
 
-- (void)test {
-    NSLog(@"PrimaryObject---test");
++ (void)load {
+    NSLog(@"PrimaryObject---load");
 }
 
-+ (void)classMethod {
-    
+- (void)primaryObjectMethod {
+    NSLog(@"PrimaryObject---primaryObjectMethod");
 }
+
 
 @end
 
@@ -23,8 +24,15 @@
 
 @implementation PrimaryObject (Demo)
 
++ (void)load {
+    NSLog(@"PrimaryObject--Category---load");
+}
+
++ (void)classMethod {
+    NSLog(@"PrimaryObject--Category--classMethod");
+}
 - (void)test {
-    NSLog(@"PrimaryObject-Demo---test");
+    NSLog(@"PrimaryObject--Category---test");
 }
 
 @end

@@ -219,19 +219,29 @@ enum {
     OBJC_ASSOCIATION_GETTER_AUTORELEASE = (2 << 8)
 }; 
 
+// 获取一个已关联的对象
 id _object_get_associative_reference(id object, void *key) {
     id value = nil;
     uintptr_t policy = OBJC_ASSOCIATION_ASSIGN;
     {
+        // 可以把manager理解为一个单例 实际上是一个静态变量
         AssociationsManager manager;
 		//初始化 _map = AssociationsHashMap
         AssociationsHashMap &associations(manager.associations());
+        // 取反object 地址 作为accociative key
         disguised_ptr_t disguised_object = DISGUISE(object);
+        // 在关联对象海西表中 找到与disguised_object关联的所有对象
         AssociationsHashMap::iterator i = associations.find(disguised_object);
+
+        // 遍历这个哈希表
         if (i != associations.end()) {
+            // 取出当前的这个关联对象
             ObjectAssociationMap *refs = i->second;
+            // 根据key查找对应的关联对象 有可能存在多个
             ObjectAssociationMap::iterator j = refs->find(key);
+            // 遍历查找结果
             if (j != refs->end()) {
+                // 取出关联实体
                 ObjcAssociation &entry = j->second;
                 value = entry.value();
                 policy = entry.policy();
@@ -241,6 +251,7 @@ id _object_get_associative_reference(id object, void *key) {
             }
         }
     }
+    // 如果policy = OBJC_ASSOCIATION_GETTER_AUTORELEASE
     if (value && (policy & OBJC_ASSOCIATION_GETTER_AUTORELEASE)) {
         objc_autorelease(value);
     }
@@ -269,42 +280,51 @@ struct ReleaseValue {
     }
 };
 
+// 设置关联对象的值
+// object 目标对象
+// 关联对象的key
+// 关联对象的值
+// 关联策略
 void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
     // retain the new value (if any) outside the lock.
     ObjcAssociation old_association(0, nil);
-	//根据key value 处理
+	//获取new_value的值
+    // acquireValue根据policy== OBJC_ASSOCIATION_SETTER_COPY 或者OBJC_ASSOCIATION_SETTER_RETAIN
+    // 判断是要进行retain操作还是copy操作
     id new_value = value ? acquireValue(value, policy) : nil;
     {
         AssociationsManager manager;
 		//生成一个全局的 HashMap
         AssociationsHashMap &associations(manager.associations());
         disguised_ptr_t disguised_object = DISGUISE(object);
-		//有value 就处理
+		//newValue存在 需要更新
         if (new_value) {
-            // break any existing association.
-//			遍历 hashMap是否有该obj
+            // 遍历 hashMap是否有该obj
             AssociationsHashMap::iterator i = associations.find(disguised_object);
+            // 遍历
             if (i != associations.end()) {
-                // secondary table exists
-				//有的话 更新其 value
+				//这个对象有关联对象 注意这里取出的并不是某个对象 而是一个哈希表
                 ObjectAssociationMap *refs = i->second;
+                // 根据key找到对应的关联对象
                 ObjectAssociationMap::iterator j = refs->find(key);
+                // 遍历根据key的查找结果
                 if (j != refs->end()) {
+                    // 如果找到了 更新值
                     old_association = j->second;
                     j->second = ObjcAssociation(policy, new_value);
                 } else {
+                    // 如果找到最后仍然没有找到 那么新增插入
                     (*refs)[key] = ObjcAssociation(policy, new_value);
                 }
             } else {
-                // create the new association (first time).
-				//没有的话 赋值给 refs
+				//如果这个对象之前就没有关联对象 那么新建
                 ObjectAssociationMap *refs = new ObjectAssociationMap;
                 associations[disguised_object] = refs;
                 (*refs)[key] = ObjcAssociation(policy, new_value);
                 object->setHasAssociatedObjects();
             }
         } else {
-            // setting the association to nil breaks the association.
+            // 如果传入的关联对象值为nil，则断开关联
             AssociationsHashMap::iterator i = associations.find(disguised_object);
             if (i !=  associations.end()) {
                 ObjectAssociationMap *refs = i->second;
@@ -316,29 +336,35 @@ void _object_set_associative_reference(id object, void *key, id value, uintptr_t
             }
         }
     }
-    // release the old value (outside of the lock).
+    // 释放旧值
     if (old_association.hasValue()) ReleaseValue()(old_association);
 }
 
+// 对象释放时移除所有的关联属性
 void _object_remove_assocations(id object) {
     vector< ObjcAssociation,ObjcAllocator<ObjcAssociation> > elements;
     {
         AssociationsManager manager;
         AssociationsHashMap &associations(manager.associations());
+
         if (associations.size() == 0) return;
+
         disguised_ptr_t disguised_object = DISGUISE(object);
+        // 根据对象地址取出所有的关联对象
         AssociationsHashMap::iterator i = associations.find(disguised_object);
         if (i != associations.end()) {
-            // copy all of the associations that need to be removed.
+            // 拷贝所有的关联关系
             ObjectAssociationMap *refs = i->second;
             for (ObjectAssociationMap::iterator j = refs->begin(), end = refs->end(); j != end; ++j) {
+                // 记录所有的关联对象到elements
                 elements.push_back(j->second);
             }
-            // remove the secondary table.
+            // 删除refs 删除这个对象的所有关联对象
             delete refs;
+            // 清除关联关系
             associations.erase(i);
         }
     }
-    // the calls to releaseValue() happen outside of the lock.
+    // elements数组中的所有元素执行ReleaseValue操作
     for_each(elements.begin(), elements.end(), ReleaseValue());
 }

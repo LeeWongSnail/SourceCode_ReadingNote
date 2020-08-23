@@ -334,6 +334,7 @@ static bool call_category_loads(void)
 * Locking: loadMethodLock must be held by the caller 
 *   All other locks must not be held.
 **********************************************************************/
+// 执行+load方法
 void call_load_methods(void)
 {
     static bool loading = NO;

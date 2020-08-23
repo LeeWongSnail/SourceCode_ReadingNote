@@ -716,46 +716,51 @@ class list_array_tt {
         }
     }
 
+    // 要添加的list 要添加的个数
     void attachLists(List* const * addedLists, uint32_t addedCount) {
         if (addedCount == 0) return;
-
+        
         if (hasArray()) {
-            // many lists -> many lists
+            // 就list的个数
             uint32_t oldCount = array()->count;
-			//一共需要的数量
+			// 添加后list的个数
             uint32_t newCount = oldCount + addedCount;
 			//分配内存 内存不够用了，需要扩容
             setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));
 			//赋值count
             array()->count = newCount;
+
 			// array()->lists：原来的方法列表向后移动 oldCount * sizeof(array()->lists[0]个长度
             memmove(array()->lists + addedCount/*数组末尾*/, array()->lists/*数组*/,
                     oldCount * sizeof(array()->lists[0])/*移动的大小*/);
+
 			//空出来的 内存使用addedLists拷贝过去 大小是:addedCount * sizeof(array()->lists[0])
             memcpy(array()->lists, addedLists, 
                    addedCount * sizeof(array()->lists[0]));
-			/*
-			图示讲解：
-			array()->lists:A->B->C->D->E
-		addedCount:3
-		addedLists:P->L->V
-			memmove之后：nil->nil->nil->A->B->C->D->E
-			然后再讲addedLists插入到数组前边,最终array()->lists的值是：
-			P->L->V->A->B->C->D->E
-			 */
         }
+        // 如果list为空 且要添加的个数为1 那么直接设置
         else if (!list  &&  addedCount == 1) {
             // 0 lists -> 1 list
             list = addedLists[0];
         } 
         else {
-            // 1 list -> many lists
+            // 如果要添加的个数大于1个
             List* oldList = list;
+            // 就数据个数
             uint32_t oldCount = oldList ? 1 : 0;
+            // 更新后的数组元素个数
             uint32_t newCount = oldCount + addedCount;
+            // 分配内存空间 这时候空间所有数据为空
             setArray((array_t *)malloc(array_t::byteSize(newCount)));
+            // 更新数据个数
             array()->count = newCount;
-            if (oldList) array()->lists[addedCount] = oldList;
+            // 如果有旧的
+            if (oldList)
+                // 将旧的数据放在了数组的addedCount的位置
+                // 前面addedCount个位置是为了给addedLists保留
+                array()->lists[addedCount] = oldList;
+
+            // 将addedLists拷贝到数组的0-addedCount的位置
             memcpy(array()->lists, addedLists, 
                    addedCount * sizeof(array()->lists[0]));
         }

@@ -436,6 +436,7 @@ static bool shouldRejectGCImage(const headerType *mhdr)
 #include "objc-file-old.h"
 #endif
 
+//
 void 
 map_images_nolock(unsigned mhCount, const char * const mhPaths[],
                   const struct mach_header * const mhdrs[])
@@ -536,38 +537,6 @@ map_images_nolock(unsigned mhCount, const char * const mhPaths[],
                      "%s requires Objective-C garbage collection "
                      "which is no longer supported.", hi->fname());
             }
-        }
-#endif
-
-#if TARGET_OS_OSX
-        // Disable +initialize fork safety if the app is too old (< 10.13).
-        // Disable +initialize fork safety if the app has a
-        //   __DATA,__objc_fork_ok section.
-
-        if (dyld_get_program_sdk_version() < DYLD_MACOSX_VERSION_10_13) {
-            DisableInitializeForkSafety = true;
-            if (PrintInitializing) {
-                _objc_inform("INITIALIZE: disabling +initialize fork "
-                             "safety enforcement because the app is "
-                             "too old (SDK version " SDK_FORMAT ")",
-                             FORMAT_SDK(dyld_get_program_sdk_version()));
-            }
-        }
-
-        for (uint32_t i = 0; i < hCount; i++) {
-            auto hi = hList[i];
-            auto mh = hi->mhdr();
-            if (mh->filetype != MH_EXECUTE) continue;
-            unsigned long size;
-            if (getsectiondata(hi->mhdr(), "__DATA", "__objc_fork_ok", &size)) {
-                DisableInitializeForkSafety = true;
-                if (PrintInitializing) {
-                    _objc_inform("INITIALIZE: disabling +initialize fork "
-                                 "safety enforcement because the app has "
-                                 "a __DATA,__objc_fork_ok section");
-                }
-            }
-            break;  // assume only one MH_EXECUTE image
         }
 #endif
 

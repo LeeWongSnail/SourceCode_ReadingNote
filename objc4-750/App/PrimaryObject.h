@@ -11,14 +11,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface PrimaryObject : NSObject
 
-- (void)test;
-
-+ (void)classMethod;
+- (void)primaryObjectMethod;
 
 @end
 
 
 @interface PrimaryObject (Demo)
+
+@property (nonatomic, strong) NSArray *demoCategoryArray;
+
 - (void)test;
 
 + (void)classMethod;

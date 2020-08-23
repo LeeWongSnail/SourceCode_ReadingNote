@@ -521,24 +521,31 @@ static void checkIsKnownClass(Class cls)
 * Records an unattached category.
 * Locking: runtimeLock must be held by the caller.
 **********************************************************************/
+// 把类和category做一个关联映射
 static void addUnattachedCategoryForClass(category_t *cat, Class cls, 
                                           header_info *catHeader)
 {
     runtimeLock.assertLocked();
 
     // DO NOT use cat->cls! cls may be cat->cls->isa instead
+    // 初始化一个分类表(这里是一个table)
     NXMapTable *cats = unattachedCategories();
+    // 分类list
     category_list *list;
-
+    // 获取原始类cls元有的分类表
     list = (category_list *)NXMapGet(cats, cls);
+    // 如果之前没有 那么新建
     if (!list) {
         list = (category_list *)
             calloc(sizeof(*list) + sizeof(list->list[0]), 1);
     } else {
+        // 如果之前已经有了 那么扩容list->count + 1
         list = (category_list *)
             realloc(list, sizeof(*list) + sizeof(list->list[0]) * (list->count + 1));
     }
+    // 将这个分类的信息放到与原始类相关的表中
     list->list[list->count++] = (locstamped_category_t){cat, catHeader};
+
     NXMapInsert(cats, cls, list);
 }
 
@@ -759,16 +766,22 @@ prepareMethodLists(Class cls, method_list_t **addedLists, int addedCount,
 // Attach method lists and properties and protocols from categories to a class.
 // Assumes the categories in cats are all loaded and sorted by load order, 
 // oldest categories first.
+// 链接 分类中的 方法列表 属性和协议 到类中
+// Class cls  原始类
+// category_list *cats 分类列表
+// bool flush_caches 是否需要刷新缓存
 static void 
 attachCategories(Class cls, category_list *cats, bool flush_caches)
 {
     if (!cats) return;
+
     if (PrintReplacedMethods) printReplacements(cls, cats);
 
     bool isMeta = cls->isMetaClass();
 
     // fixme rearrange to remove these intermediate allocations
-	//方法数组[[1,2,3],[4,5,6],[7,8,9]]
+    // 首先分配method_list_t *， property_list_t *， protocol_list_t *的数组空间，数组大小等于category的个数
+    //方法数组 二维数组 每个分类的方法是数组中的一个元素 每个分类可能有多个方法
     method_list_t **mlists = (method_list_t **)
         malloc(cats->count * sizeof(*mlists));
 	//属性数组
@@ -782,45 +795,57 @@ attachCategories(Class cls, category_list *cats, bool flush_caches)
     int mcount = 0;
     int propcount = 0;
     int protocount = 0;
+    // i表示分类的个数
     int i = cats->count;
     bool fromBundle = NO;
+    //依次读取每一个category，将其methods，property，protocol添加到mlists，proplist，protolist中存储
     while (i--) {
 		//取出某个分类
         auto& entry = cats->list[i];
-//取出分类 的 instance方法或者class方法
+        //取出分类 的 对象方法或者类方法
         method_list_t *mlist = entry.cat->methodsForMeta(isMeta);
+        // 将方法列表加入都mlists中(注意mlist本身也是个数组) 因此mlists是一个二维数组
         if (mlist) {
             mlists[mcount++] = mlist; //mlists 接受所有分类方法
             fromBundle |= entry.hi->isBundle();
         }
-//proplist 接受所有分类属性
+        //proplist 所有分类属性
         property_list_t *proplist = 
             entry.cat->propertiesForMeta(isMeta, entry.hi);
+
         if (proplist) {
             proplists[propcount++] = proplist;
         }
-//proplist 接受所有协议方法
+
+        //proplist 所有协议方法
         protocol_list_t *protolist = entry.cat->protocols;
         if (protolist) {
             protolists[protocount++] = protolist;
         }
     }
-//收集了所有协议 分类方法
+
+    // 取出class的data()数据，其实是class_rw_t * 指针，其对应结构体实例存储了class的基本信息
     auto rw = cls->data();
 
     prepareMethodLists(cls, mlists, mcount, NO, fromBundle);
-	//追加所有分类方法
+	//将category中的method 添加到class中
     rw->methods.attachLists(mlists, mcount);
 	//释放数组
     free(mlists);
-	//刷新该类的缓存
+
+	// 如果需要，同时刷新class的method list cache
     if (flush_caches  &&  mcount > 0) flushCaches(cls);
-//追加所有分类属性
+
+    // 将category的property添加到class中
     rw->properties.attachLists(proplists, propcount);
-    free(proplists);//释放数组
-//追加所有分类协议
+    //释放数组
+    free(proplists);
+
+
+    // 将category的protocol添加到class中
     rw->protocols.attachLists(protolists, protocount);
-    free(protolists);//释放数组
+    //释放数组
+    free(protolists);
 }
 
 
@@ -908,6 +933,7 @@ static void methodizeClass(Class cls)
 * Updates method caches for cls and its subclasses.
 * Locking: runtimeLock must be held by the caller
 **********************************************************************/
+//
 static void remethodizeClass(Class cls)
 {
     category_list *cats;
@@ -917,13 +943,13 @@ static void remethodizeClass(Class cls)
 
     isMeta = cls->isMetaClass();
 
-    // Re-methodizing: check for more categories
+    // 取出还未被附加到class上的category list
     if ((cats = unattachedCategoriesForClass(cls, false/*not realizing*/))) {
         if (PrintConnecting) {
             _objc_inform("CLASS: attaching categories to class '%s' %s", 
                          cls->nameForLogging(), isMeta ? "(meta)" : "");
         }
-        
+        // 将category附加到class上
         attachCategories(cls, cats, true /*flush caches*/);        
         free(cats);
     }
@@ -2165,6 +2191,7 @@ void _objc_flush_caches(Class cls)
 *
 * Locking: write-locks runtimeLock
 **********************************************************************/
+// dyld将image加到内存中后调用
 void
 map_images(unsigned count, const char * const paths[],
            const struct mach_header * const mhdrs[])
@@ -2182,6 +2209,7 @@ map_images(unsigned count, const char * const paths[],
 **********************************************************************/
 extern bool hasLoadMethods(const headerType *mhdr);
 extern void prepare_load_methods(const headerType *mhdr);
+
 
 void
 load_images(const char *path __unused, const struct mach_header *mh)
@@ -2458,6 +2486,7 @@ readProtocol(protocol_t *newproto, Class protocol_class,
 *
 * Locking: runtimeLock acquired by map_images
 **********************************************************************/
+//
 void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int unoptimizedTotalClasses)
 {
     header_info *hi;
@@ -2478,56 +2507,6 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
 
     if (!doneOnce) {
         doneOnce = YES;
-
-#if SUPPORT_NONPOINTER_ISA
-        // Disable non-pointer isa under some conditions.
-
-# if SUPPORT_INDEXED_ISA
-        // Disable nonpointer isa if any image contains old Swift code
-        for (EACH_HEADER) {
-            if (hi->info()->containsSwift()  &&
-                hi->info()->swiftVersion() < objc_image_info::SwiftVersion3)
-            {
-                DisableNonpointerIsa = true;
-                if (PrintRawIsa) {
-                    _objc_inform("RAW ISA: disabling non-pointer isa because "
-                                 "the app or a framework contains Swift code "
-                                 "older than Swift 3.0");
-                }
-                break;
-            }
-        }
-# endif
-
-# if TARGET_OS_OSX
-        // Disable non-pointer isa if the app is too old
-        // (linked before OS X 10.11)
-        if (dyld_get_program_sdk_version() < DYLD_MACOSX_VERSION_10_11) {
-            DisableNonpointerIsa = true;
-            if (PrintRawIsa) {
-                _objc_inform("RAW ISA: disabling non-pointer isa because "
-                             "the app is too old (SDK version " SDK_FORMAT ")",
-                             FORMAT_SDK(dyld_get_program_sdk_version()));
-            }
-        }
-
-        // Disable non-pointer isa if the app has a __DATA,__objc_rawisa section
-        // New apps that load old extensions may need this.
-        for (EACH_HEADER) {
-            if (hi->mhdr()->filetype != MH_EXECUTE) continue;
-            unsigned long size;
-            if (getsectiondata(hi->mhdr(), "__DATA", "__objc_rawisa", &size)) {
-                DisableNonpointerIsa = true;
-                if (PrintRawIsa) {
-                    _objc_inform("RAW ISA: disabling non-pointer isa because "
-                                 "the app has a __DATA,__objc_rawisa section");
-                }
-            }
-            break;  // assume only one MH_EXECUTE image
-        }
-# endif
-
-#endif
 
         if (DisableTaggedPointers) {
             disableTaggedPointers();
@@ -2713,14 +2692,22 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
 
     ts.log("IMAGE TIMES: realize future classes");
 
-    // Discover categories. 
+    // Discover categories.
+    // #define EACH_HEADER hIndex = 0; hIndex < hCount && (hi = hList[hIndex]); hIndex++
     for (EACH_HEADER) {
+        //GETSECT(_getObjc2CategoryList,        category_t *,    "__objc_catlist");
+        // 读取__objc_catlist seciton下所记录的所有category。并存放到category_t *数组中
         category_t **catlist = 
             _getObjc2CategoryList(hi, &count);
+
+        // 是否有分类添加的属性
         bool hasClassProperties = hi->info()->hasCategoryClassProperties();
 
+        // 遍历所有分类
         for (i = 0; i < count; i++) {
+            // 取出每一个分类
             category_t *cat = catlist[i];
+            // 调用remapClass(cat->cls)，并返回一个objc_class *对象cls。这一步的目的在于找到到category对应的类对象cls
             Class cls = remapClass(cat->cls);
 
             if (!cls) {
@@ -2735,15 +2722,15 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
                 continue;
             }
 
-            // Process this category. 
-            // First, register the category with its target class. 
-            // Then, rebuild the class's method lists (etc) if 
-            // the class is realized. 
             bool classExists = NO;
+            // 如果这个类的instanceMethods、protocols、instanceProperties有值
+            // 如果Category中有实例方法，协议，实例属性，会改写target class的结构
             if (cat->instanceMethods ||  cat->protocols  
                 ||  cat->instanceProperties) 
             {
+                //
                 addUnattachedCategoryForClass(cat, cls, hi);
+                //修改class的method list结构
                 if (cls->isRealized()) {
                     remethodizeClass(cls);
                     classExists = YES;
@@ -2755,10 +2742,13 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
                 }
             }
 
+            // 如果category中有类方法，协议，或类属性(目前OC版本不支持类属性), 会改写target class的元类结构
             if (cat->classMethods  ||  cat->protocols  
                 ||  (hasClassProperties && cat->_classProperties)) 
             {
                 addUnattachedCategoryForClass(cat, cls->ISA(), hi);
+
+                // 修改class的method list结构
                 if (cls->ISA()->isRealized()) {
                     remethodizeClass(cls->ISA());
                 }
@@ -2780,66 +2770,6 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
 
     if (DebugNonFragileIvars) {
         realizeAllClasses();
-    }
-
-
-    // Print preoptimization statistics
-    if (PrintPreopt) {
-        static unsigned int PreoptTotalMethodLists;
-        static unsigned int PreoptOptimizedMethodLists;
-        static unsigned int PreoptTotalClasses;
-        static unsigned int PreoptOptimizedClasses;
-
-        for (EACH_HEADER) {
-            if (hi->isPreoptimized()) {
-                _objc_inform("PREOPTIMIZATION: honoring preoptimized selectors "
-                             "in %s", hi->fname());
-            }
-            else if (hi->info()->optimizedByDyld()) {
-                _objc_inform("PREOPTIMIZATION: IGNORING preoptimized selectors "
-                             "in %s", hi->fname());
-            }
-
-            classref_t *classlist = _getObjc2ClassList(hi, &count);
-            for (i = 0; i < count; i++) {
-                Class cls = remapClass(classlist[i]);
-                if (!cls) continue;
-
-                PreoptTotalClasses++;
-                if (hi->isPreoptimized()) {
-                    PreoptOptimizedClasses++;
-                }
-                
-                const method_list_t *mlist;
-                if ((mlist = ((class_ro_t *)cls->data())->baseMethods())) {
-                    PreoptTotalMethodLists++;
-                    if (mlist->isFixedUp()) {
-                        PreoptOptimizedMethodLists++;
-                    }
-                }
-                if ((mlist=((class_ro_t *)cls->ISA()->data())->baseMethods())) {
-                    PreoptTotalMethodLists++;
-                    if (mlist->isFixedUp()) {
-                        PreoptOptimizedMethodLists++;
-                    }
-                }
-            }
-        }
-
-        _objc_inform("PREOPTIMIZATION: %zu selector references not "
-                     "pre-optimized", UnfixedSelectors);
-        _objc_inform("PREOPTIMIZATION: %u/%u (%.3g%%) method lists pre-sorted",
-                     PreoptOptimizedMethodLists, PreoptTotalMethodLists, 
-                     PreoptTotalMethodLists
-                     ? 100.0*PreoptOptimizedMethodLists/PreoptTotalMethodLists 
-                     : 0.0);
-        _objc_inform("PREOPTIMIZATION: %u/%u (%.3g%%) classes pre-registered",
-                     PreoptOptimizedClasses, PreoptTotalClasses, 
-                     PreoptTotalClasses 
-                     ? 100.0*PreoptOptimizedClasses/PreoptTotalClasses
-                     : 0.0);
-        _objc_inform("PREOPTIMIZATION: %zu protocol references not "
-                     "pre-optimized", UnfixedProtocolReferences);
     }
 
 #undef EACH_HEADER
