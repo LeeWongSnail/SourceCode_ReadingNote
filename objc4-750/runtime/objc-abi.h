@@ -94,14 +94,14 @@ _objcInit(void)
 // Description of an Objective-C image.
 // __DATA,__objc_imageinfo stores one of these.
 typedef struct objc_image_info {
-    uint32_t version; // currently 0
-    uint32_t flags;
+    uint32_t version; // 当前一直是0
+    uint32_t flags; // 用来表示支持的特性
 
 #if __cplusplus >= 201103L
   private:
     enum : uint32_t {
         IsReplacement       = 1<<0,  // used for Fix&Continue, now ignored
-        SupportsGC          = 1<<1,  // image supports GC
+        SupportsGC          = 1<<1,  // image supports GC 镜像是否支持垃圾回收
         RequiresGC          = 1<<2,  // image requires GC
         OptimizedByDyld     = 1<<3,  // image is from an optimized shared cache
         CorrectedSynthesize = 1<<4,  // used for an old workaround, now ignored
@@ -121,6 +121,7 @@ typedef struct objc_image_info {
     };
 
   public:
+    // 下面的这些方法都是通过flags与位移枚举中的值进行按位与操作 根据结构判断是否支持某种操作
     bool isReplacement()   const { return flags & IsReplacement; }
     bool supportsGC()      const { return flags & SupportsGC; }
     bool requiresGC()      const { return flags & RequiresGC; }

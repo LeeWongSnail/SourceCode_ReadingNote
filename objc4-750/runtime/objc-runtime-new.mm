@@ -3913,6 +3913,7 @@ protocol_addProperty(Protocol *proto_gen, const char *name,
 * This requires all classes be realized, which is regretfully non-lazy.
 * Locking: acquires runtimeLock
 **********************************************************************/
+// 获取所有的类列表
 int 
 objc_getClassList(Class *buffer, int bufferLen) 
 {
