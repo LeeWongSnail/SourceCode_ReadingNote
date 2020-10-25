@@ -1905,7 +1905,7 @@ static Class realizeClass(Class cls)
     assert(cls == remapClass(cls));
 
     // fixme verify class is not in an un-dlopened part of the shared cache?
-//首先将tw赋值给to，因为数据结构一样可以直接强制转化
+    //首先将rw赋值给ro，因为数据结构一样可以直接强制转化
     ro = (const class_ro_t *)cls->data();
     if (ro->flags & RO_FUTURE) {//是否已经初始化过，初始化过的哈 则 cls->rw 已经初始化过
         rw = cls->data();
@@ -2996,13 +2996,14 @@ method_setImplementation(Method m, IMP imp)
     return _method_setImplementation(Nil, m, imp);
 }
 
-
+// 方法交换实现 m1 和 m2 分别表示要交换的两个方法
 void method_exchangeImplementations(Method m1, Method m2)
 {
     if (!m1  ||  !m2) return;
 
     mutex_locker_t lock(runtimeLock);
 
+    // 方法交换仅仅是交换了两个方法的imp指针
     IMP m1_imp = m1->imp;
     m1->imp = m2->imp;
     m2->imp = m1_imp;
@@ -3011,9 +3012,9 @@ void method_exchangeImplementations(Method m1, Method m2)
     // RR/AWZ updates are slow because class is unknown
     // Cache updates are slow because class is unknown
     // fixme build list of classes whose Methods are known externally?
-
+    // 更新缓存
     flushCaches(nil);
-
+    // 更新两个方法的自定义 方法  rr 表示retain/release等方法 awz 表示allocwithzone方法
     updateCustomRR_AWZ(nil, m1);
     updateCustomRR_AWZ(nil, m2);
 }
@@ -4603,33 +4604,41 @@ class_setVersion(Class cls, int version)
     cls->data()->version = version;
 }
 
-
+// 在list中查找方法为key的
 static method_t *findMethodInSortedMethodList(SEL key, const method_list_t *list)
 {
     assert(list);
 
     const method_t * const first = &list->first;
     const method_t *base = first;
+    // 标志位
     const method_t *probe;
+    // 要查找的方法的名称
     uintptr_t keyValue = (uintptr_t)key;
+    // 方法列表中方法的个数
     uint32_t count;
-    
+    // 遍历方法列表 每次遍历count >>= 1 count每次遍历/2
     for (count = list->count; count != 0; count >>= 1) {
+        // base为列表中第一个 count>>1 = count /2 即表示列表中间的位置index
         probe = base + (count >> 1);
-        
+        // 中间位置的方法的方法名
         uintptr_t probeValue = (uintptr_t)probe->name;
-        
+        // 方法名对比 如果刚好中间位置的方法的方法名等于要查找的方法名
         if (keyValue == probeValue) {
             // `probe` is a match.
             // Rewind looking for the *first* occurrence of this value.
             // This is required for correct category overrides.
+            // 即使查找到了对应的方法 也要向前查找 找到在方法列表中靠前的方法实现
+            // 方法列表中是可能存在同名方法的 比如分类重写了方法实现 那么肯定会找到分类的实现返回
             while (probe > first && keyValue == (uintptr_t)probe[-1].name) {
                 probe--;
             }
+            // 返回方法列表中对应方法实现
             return (method_t *)probe;
         }
-        
+        // 如果要查找的方法大于中间位置的方法
         if (keyValue > probeValue) {
+            // 从中间位置作为base 查找 base-count之间的方法 此处为二分查找 这也侧面验证了method_list_t是一个有序列表
             base = probe + 1;
             count--;
         }
@@ -4643,6 +4652,7 @@ static method_t *findMethodInSortedMethodList(SEL key, const method_list_t *list
 * fixme
 * Locking: runtimeLock must be read- or write-locked by the caller
 **********************************************************************/
+// 在方法列表mlist中查找方法sel
 static method_t *search_method_list(const method_list_t *mlist, SEL sel)
 {
     int methodListIsFixedUp = mlist->isFixedUp();
@@ -4671,6 +4681,7 @@ static method_t *search_method_list(const method_list_t *mlist, SEL sel)
     return nil;
 }
 
+// 在类的方法列表中查找对应的方法实现
 static method_t *
 getMethodNoSuper_nolock(Class cls, SEL sel)
 {
@@ -4680,12 +4691,13 @@ getMethodNoSuper_nolock(Class cls, SEL sel)
     // fixme nil cls? 
     // fixme nil sel?
 
-
+    // 方法列表的遍历
     for (auto mlists = cls->data()->methods.beginLists(),
               end = cls->data()->methods.endLists(); 
          mlists != end;
          ++mlists)
     {
+        // 在mlists中查找sel
         method_t *m = search_method_list(*mlists, sel);
         if (m) return m;
     }
@@ -4699,6 +4711,7 @@ getMethodNoSuper_nolock(Class cls, SEL sel)
 * fixme
 * Locking: runtimeLock must be read- or write-locked by the caller
 **********************************************************************/
+// 无锁情况下过去cls类的实例方法sel
 static method_t *
 getMethod_nolock(Class cls, SEL sel)
 {
@@ -4708,9 +4721,9 @@ getMethod_nolock(Class cls, SEL sel)
 
     // fixme nil cls?
     // fixme nil sel?
-
+    // 类是否被实例化 每个被实例化的类实际上是有一个标志位
     assert(cls->isRealized());
-
+    // 这里通过while循环的方式不断的查找当前类->父类->...的方法查找这个方法 直到找到方法或者是找到cls->superclass=nil
     while (cls  &&  ((m = getMethodNoSuper_nolock(cls, sel))) == nil) {
         cls = cls->superclass;
     }
@@ -4735,6 +4748,7 @@ static Method _class_getMethod(Class cls, SEL sel)
 * class_getInstanceMethod.  Return the instance method for the
 * specified class and selector.
 **********************************************************************/
+// 获取cls类中对象方法sel的实现
 Method class_getInstanceMethod(Class cls, SEL sel)
 {
     if (!cls  ||  !sel) return nil;
@@ -4747,11 +4761,12 @@ Method class_getInstanceMethod(Class cls, SEL sel)
 #warning fixme build and search caches
         
     // Search method lists, try method resolver, etc.
+    // 搜索方法列表 这个方法是有返回值的 但是在这里并没有用到返回值
     lookUpImpOrNil(cls, sel, nil, 
                    NO/*initialize*/, NO/*cache*/, YES/*resolver*/);
 
 #warning fixme build and search caches
-
+    // 递归获取cls的sel方法
     return _class_getMethod(cls, sel);
 }
 
@@ -5630,6 +5645,8 @@ BOOL class_conformsToProtocol(Class cls, Protocol *proto_gen)
 * fixme
 * Locking: runtimeLock must be held by the caller
 **********************************************************************/
+// 像cls类中添加名为name实现为imp编码为types的方法
+// replace 表示是否需要替换方法实现
 static IMP 
 addMethod(Class cls, SEL name, IMP imp, const char *types, bool replace)
 {
@@ -5643,15 +5660,21 @@ addMethod(Class cls, SEL name, IMP imp, const char *types, bool replace)
     assert(cls->isRealized());//
 
     method_t *m;
+    // 先从cls中获取名为name的方法实现 如果可以找到方法
     if ((m = getMethodNoSuper_nolock(cls, name))) {
         // already exists
+        // 类中已有该方法 判断是否需要替换方法实现
         if (!replace) {
+            // 不需要替换直接返回该方法的实现
             result = m->imp;
         } else {
+            // 需要替换则调用_method_setImplementation方法替换方法实现
             result = _method_setImplementation(cls, m, imp);
         }
     } else {
         // fixme optimize
+        // 如果当前类的方法列表中不包含名为name的方法
+        // 新创建一个method_list_t结构体 并赋值
         method_list_t *newlist;
         newlist = (method_list_t *)calloc(sizeof(*newlist), 1);
         newlist->entsizeAndFlags = 
@@ -5660,9 +5683,10 @@ addMethod(Class cls, SEL name, IMP imp, const char *types, bool replace)
         newlist->first.name = name;
         newlist->first.types = strdupIfMutable(types);
         newlist->first.imp = imp;
-
+        // 将新建的newlist添加到已有的方法列表中
         prepareMethodLists(cls, &newlist, 1, NO, NO);
         cls->data()->methods.attachLists(&newlist, 1);
+        // 刷新缓存
         flushCaches(cls);
 
         result = nil;
@@ -5759,6 +5783,8 @@ class_addMethod(Class cls, SEL name, IMP imp, const char *types)
     return ! addMethod(cls, name, imp, types ?: "", NO);
 }
 
+
+// cls 要替换方法的所在类 name
 
 IMP 
 class_replaceMethod(Class cls, SEL name, IMP imp, const char *types)

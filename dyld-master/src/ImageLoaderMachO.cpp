@@ -1042,6 +1042,7 @@ uint32_t ImageLoaderMachO::minOSVersion() const
 }
 
 
+// 查找主程序的LC_MAIN加载命令获取程序的入口点,
 void* ImageLoaderMachO::getThreadPC() const
 {
 	const uint32_t cmd_count = ((macho_header*)fMachOData)->ncmds;
@@ -1062,7 +1063,7 @@ void* ImageLoaderMachO::getThreadPC() const
 	return NULL;
 }
 
-
+// 调用LC_UNIXTHREAD加载命令中去找, 找到后就跳到入口点指定的地址
 void* ImageLoaderMachO::getMain() const
 {
 	const uint32_t cmd_count = ((macho_header*)fMachOData)->ncmds;

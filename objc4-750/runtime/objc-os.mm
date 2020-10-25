@@ -844,21 +844,6 @@ void _objc_atfork_child()
 
 void _objc_init(void)
 {
-    static bool initialized = false;
-    if (initialized) return;
-    initialized = true;
-    
-    // fixme defer initialization until an objc-using image is found?
-//	读取runtime的环境变量，如果需要则打印出来
-    environ_init();
-	
-    tls_init();
-	//运行c++ 构造函数
-    static_init();
-	//lock 初始化 暂时是空的函数
-    lock_init();
-	//初始化系统异常操作
-    exception_init();
 	/*
 	 仅供objc运行时使用，注册在映射、取消映射和初始化objc映像调用的处理程序。dyld将使用包含objc-image-info回调给`mapped`.
 	 这些dylibs将自动引用计数，因此objc将不再需要调用dlopen()防止未加载。

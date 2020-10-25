@@ -42,7 +42,9 @@ private:
     MethodCacheIMP _imp;
     cache_key_t _key;
 #else
+    // unsigned long 的指针，其实是一个被 hash 化的一串数值，就是方法的 sel
     cache_key_t _key;
+    // 保存着对应的函数地址
     MethodCacheIMP _imp;
 #endif
 
@@ -57,8 +59,11 @@ public:
 
 
 struct cache_t {
+    // 是一个指向 bucket_t 结构体的哈希表
     struct bucket_t *_buckets;
+    // 是一个 uint32_t 的指针，表示整个 _buckets 哈希表的长度
     mask_t _mask;
+    // _occupied 也是一个 uint32_t 的指针，在 _buckets 哈希表中已经缓存的方法数量
     mask_t _occupied;
 
 public:
@@ -459,25 +464,36 @@ struct locstamped_category_list_t {
 #if !__LP64__
 
 // class or superclass has .cxx_construct implementation
+// 第 18 位的值是否为 1，以此表示该类或者父类是否有 .cxx_construct 函数实现
 #define RW_HAS_CXX_CTOR       (1<<18)
 // class or superclass has .cxx_destruct implementation
+// 第17位的值是否为 1 一次来表示类或者父类有 .cxx_destruct 函数实现。
 #define RW_HAS_CXX_DTOR       (1<<17)
+
 // class or superclass has default alloc/allocWithZone: implementation
 // Note this is is stored in the metaclass.
+// 第 16 位的值是否为 1，以此表示该类或者父类是否有 alloc/allocWithZone 函数的默认实现
 #define RW_HAS_DEFAULT_AWZ    (1<<16)
 // class's instances requires raw isa
+// 第 15 位的值是否为 1，以此表示类实例对象（此处是指类对象，不是使用类构建的实例对象，一定要记得）是否需要原始的 isa。
 #if SUPPORT_NONPOINTER_ISA
 #define RW_REQUIRES_RAW_ISA   (1<<15)
 #endif
+
 // class or superclass has default retain/release/autorelease/retainCount/
 //   _tryRetain/_isDeallocating/retainWeakReference/allowsWeakReference
+// 第 14 位的值是否为 1，以此表示该类或者父类是否有如下函数的默认实现
 #define RW_HAS_DEFAULT_RR     (1<<14)
 
 // class is a Swift class from the pre-stable Swift ABI
+// class 是来自稳定的 Swift ABI 的 Swift 类。(遗留的类)
 #define FAST_IS_SWIFT_LEGACY  (1UL<<0)
+
 // class is a Swift class from the stable Swift ABI
+// class 是一个有稳定的 Swift ABI 的 Swift类。
 #define FAST_IS_SWIFT_STABLE  (1UL<<1)
 // data pointer
+// 一个定义好的掩码
 #define FAST_DATA_MASK        0xfffffffcUL
 
 #elif 1
@@ -845,7 +861,7 @@ struct class_rw_t {
     // Be warned that Symbolication knows the layout of this structure.
     uint32_t flags;
     uint32_t version;
-
+    // class_ro_t与class_rw_t的最大区别在于一个是只读的，一个是可读写的，实质上ro就是readonly的简写，rw是readwrite的简写
     const class_ro_t *ro;
 
     method_array_t methods;//方法列表
@@ -946,6 +962,8 @@ public:
         // Set during realization or construction only. No locking needed.
         // Use a store-release fence because there may be concurrent
         // readers of data and data's contents.
+        // (bits & ~FAST_DATA_MASK)现将当前存储的值bits与之前定义好的掩码进行按位与操作 相当于取出标志位 3-46位
+        // 将前一步得到的值与外部传入的值进行按位或操作 设置新的标志位的值
         uintptr_t newBits = (bits & ~FAST_DATA_MASK) | (uintptr_t)newData;
         atomic_thread_fence(memory_order_release);
         bits = newBits;
@@ -1130,6 +1148,7 @@ struct objc_class : objc_object {
     // Class ISA;
     Class superclass;
     cache_t cache;             // formerly cache pointer and vtable
+    // class_data_bits_t 相当于 class_rw_t 指针加上 rr/alloc 的标志。
     class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags
 
     class_rw_t *data() { 
