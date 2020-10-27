@@ -680,10 +680,12 @@ void _class_resolveMethod(Class cls, SEL sel, id inst)
 * class_getClassMethod.  Return the class method for the specified
 * class and selector.
 **********************************************************************/
+// 获取指定类的类方法
 Method class_getClassMethod(Class cls, SEL sel)
 {
     if (!cls  ||  !sel) return nil;
 
+    // 获取类的元类的方法
     return class_getInstanceMethod(cls->getMeta(), sel);
 }
 
