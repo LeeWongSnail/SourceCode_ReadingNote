@@ -4799,6 +4799,7 @@ log_and_fill_cache(Class cls, IMP imp, SEL sel, id receiver, Class implementer)
 * This lookup avoids optimistic cache scan because the dispatcher 
 * already tried that.
 **********************************************************************/
+// 查找IMP
 IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
 {
     return lookUpImpOrForward(cls, sel, obj, 

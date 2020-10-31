@@ -358,27 +358,40 @@ LExit$0:
  ********************************************************************/
 
 	ENTRY _objc_msgSend
-	
+	//cbz 比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令）
+    //在汇编代码中 r0 表示函数的第一个参数，所以 r0 代表消息的接受者，
+    // 判断 r0 (消息接受者)是否为空，如果为空跳转到 标签 `LNilReceiver_f`
 	cbz	r0, LNilReceiver_f
-
+    // 将 [r0] 的值加载到r9寄存器
 	ldr	r9, [r0]		// r9 = self->isa
+    // 调用GetClassFromIsa方法 根据isa获取到对应的类
 	GetClassFromIsa			// r9 = class
+    // 调用CacheLookup方法 查找方法缓存
 	CacheLookup NORMAL
 	// cache hit, IMP in r12, eq already set for nonstret forwarding
+    // 如果缓存命中 IMP 放到r12中 调用imp方法
 	bx	r12			// call imp
 
+
+    // 没有找到缓存的方法
 	CacheLookup2 NORMAL
-	// cache miss
+	// cache miss r0的内容加载到r9中
 	ldr	r9, [r0]		// r9 = self->isa
+    // 调用GetClassFromIsa方法 根据isa获取到对应的类
 	GetClassFromIsa			// r9 = class
+    // b 跳转指令，可带条件跳转与cmp配合使用
+    // 跳转去执行 __objc_msgSend_uncached 既然没有找到方法,就去从类,父类,元类中查找
 	b	__objc_msgSend_uncached
 
 LNilReceiver:
 	// r0 is already zero
+    // 消息接受者为空 表示r0为空
 	mov	r1, #0
 	mov	r2, #0
 	mov	r3, #0
+    // return 0
 	FP_RETURN_ZERO
+    // 直接调用lr方法
 	bx	lr	
 
 	END_ENTRY _objc_msgSend

@@ -223,12 +223,16 @@ struct entsize_list_tt {
     };
 };
 
-
+// OC实例方法或类方法结构体
 struct method_t {
+    // 方法名
     SEL name;
+    // 记录方法返回值和方法参数
     const char *types;
+    // 方法实现
     MethodListIMP imp;
 
+    // 根据方法地址排序
     struct SortBySELAddress :
         public std::binary_function<const method_t&,const method_t&, bool>
     {
