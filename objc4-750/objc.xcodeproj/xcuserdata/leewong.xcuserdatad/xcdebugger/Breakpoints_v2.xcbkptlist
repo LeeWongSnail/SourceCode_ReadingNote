@@ -37,8 +37,8 @@
             filePath = "runtime/objc-runtime-new.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "4726"
-            endingLineNumber = "4726"
+            startingLineNumber = "4729"
+            endingLineNumber = "4729"
             landmarkName = "getMethod_nolock(cls, sel)"
             landmarkType = "9">
          </BreakpointContent>

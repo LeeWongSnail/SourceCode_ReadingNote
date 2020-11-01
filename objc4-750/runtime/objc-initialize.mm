@@ -364,7 +364,7 @@ void waitForInitializeToComplete(Class cls)
     asm("");
 }
 
-
+// 调用类中的+ (void)initialize方法
 void callInitialize(Class cls)
 {
     ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);

@@ -558,7 +558,7 @@ void cache_t::expand()
     reallocate(oldCapacity, newCapacity);
 }
 
-
+// 方法缓存
 static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)
 {
     cacheUpdateLock.assertLocked();
@@ -568,9 +568,12 @@ static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)
 
     // Make sure the entry wasn't added to the cache by some other thread 
     // before we grabbed the cacheUpdateLock.
+    // 如果已经缓存了 则返回
     if (cache_getImp(cls, sel)) return;
 
+    // 获取到类对应的缓存
     cache_t *cache = getCache(cls);
+    // 从类对应的缓存中找到方法缓存的key
     cache_key_t key = getKey(sel);
 
     // Use the cache as-is if it is less than 3/4 full
@@ -591,8 +594,11 @@ static void cache_fill_nolock(Class cls, SEL sel, IMP imp, id receiver)
     // Scan for the first unused slot and insert there.
     // There is guaranteed to be an empty slot because the 
     // minimum size is 4 and we resized at 3/4 full.
+    // 在cache中根据key和receiver查找bucket
     bucket_t *bucket = cache->find(key, receiver);
+    // 如果key==0 k++
     if (bucket->key() == 0) cache->incrementOccupied();
+    // 存储缓存
     bucket->set(key, imp);
 }
 

@@ -570,10 +570,12 @@ void fixupCopiedIvars(id newObject, id oldObject)
 * cls should be a metaclass.
 * Does not check if the method already exists.
 **********************************************************************/
+// 动态解析类方法
 static void _class_resolveClassMethod(Class cls, SEL sel, id inst)
 {
     assert(cls->isMetaClass());
 
+    // 先判断resolveClassMethod方法是否实现 如果没实现则直接return
     if (! lookUpImpOrNil(cls, SEL_resolveClassMethod, inst, 
                          NO/*initialize*/, YES/*cache*/, NO/*resolver*/)) 
     {
@@ -581,12 +583,15 @@ static void _class_resolveClassMethod(Class cls, SEL sel, id inst)
         return;
     }
 
+    // resolveClassMethod在cls中实现了
     BOOL (*msg)(Class, SEL, SEL) = (typeof(msg))objc_msgSend;
+    // 调用_class_getNonMetaClass(cls, inst)的SEL_resolveClassMethod方法参数为SEL
     bool resolved = msg(_class_getNonMetaClass(cls, inst), 
                         SEL_resolveClassMethod, sel);
 
     // Cache the result (good or bad) so the resolver doesn't fire next time.
     // +resolveClassMethod adds to self->ISA() a.k.a. cls
+    // 在cls类中再次查找sel是否实现
     IMP imp = lookUpImpOrNil(cls, sel, inst, 
                              NO/*initialize*/, YES/*cache*/, NO/*resolver*/);
 
@@ -656,20 +661,22 @@ static void _class_resolveInstanceMethod(Class cls, SEL sel, id inst)
 * 调用 +resolveClassMethod 或者 +resolveInstanceMethod
 * 如果存在了则不检查
 **********************************************************************/
+// 动态解析方法
 void _class_resolveMethod(Class cls, SEL sel, id inst)
 {
-    if (! cls->isMetaClass()) {//不是元类则调用 实例的
-	//首先调用
+    // 不是元类 则调用动态解析实例方法
+    if (! cls->isMetaClass()) {
+        //首先调用
 		_class_resolveInstanceMethod(cls, sel, inst);
     } 
     else {
-        // try [nonMetaClass resolveClassMethod:sel]
-        // and [cls resolveInstanceMethod:sel]
-		//寻找classMethod
+		//如果是元类 则应该动态解析类方法
         _class_resolveClassMethod(cls, sel, inst);
+        // 查找这个类的方法列表中是否有这个方法对应的IMP
         if (!lookUpImpOrNil(cls, sel, inst, 
                             NO/*initialize*/, YES/*cache*/, NO/*resolver*/)) 
         {
+            // 如果方法列表中没有找到IMP 则调用_class_resolveInstanceMethod方法？？？？？ 为什么
             _class_resolveInstanceMethod(cls, sel, inst);
         }
     }

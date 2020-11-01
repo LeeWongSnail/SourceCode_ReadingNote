@@ -470,6 +470,8 @@ static bool dataSegmentsContain(const void *ptr) {
 * shared cache, within the data segment of a loaded image, or has been
 * allocated with obj_allocateClassPair).
 **********************************************************************/
+// 判断一个类是否为已知类
+// 在共享cache或者加载镜像的数据段或者通过obj_allocateClassPair方法创建的类
 static bool isKnownClass(Class cls) {
     // The order of conditionals here is important for speed. We want to
     // put the most common cases first, but also the fastest cases
@@ -477,6 +479,7 @@ static bool isKnownClass(Class cls) {
     // Checking allocatedClasses is fast, but may not be common,
     // depending on what the program is doing. Checking if data segments
     // contain the address is slow, so do it last.
+    // 查找的顺序是先查找共享缓存，然后是通过obj_allocateClassPair创建的类，最后才是从MACH-O的数据段进行查找
     return (sharedRegionContains(cls) ||
             NXHashMember(allocatedClasses, cls) ||
             dataSegmentsContain(cls));
@@ -4817,6 +4820,13 @@ IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
 *   must be converted to _objc_msgForward or _objc_msgForward_stret.
 * 如果你不想用forwarding，则调用lookUpImpOrNil()代替
 **********************************************************************/
+
+// 当方法调用的缓存中找不到对应的方法时就会调用这个方法
+// cls 消息的接受者
+// sel 要调用的方法
+// initialize 是否已经初始化
+// cache 是否需要查找缓存 但是只是在当前类使用 在父类统一都会先查找缓存在查找方法列表
+// resolver 是否需要动态解析
 IMP lookUpImpOrForward(Class cls, SEL sel, id inst, 
                        bool initialize, bool cache, bool resolver)
 {
@@ -4826,28 +4836,22 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
     runtimeLock.assertUnlocked();
 
     // Optimistic cache lookup
+    // 如果在缓存中找到对应的方法 则直接返回
     if (cache) { //从汇编过来是NO
         imp = cache_getImp(cls, sel);
         if (imp) return imp;
     }
 
-    // runtimeLock is held during isRealized and isInitialized checking
-    // to prevent races against concurrent realization.
-
-    // runtimeLock is held during method search to make
-    // method-lookup + cache-fill atomic with respect to method addition.
-    // Otherwise, a category could be added but ignored indefinitely because
-    // the cache was re-filled with the old value after the cache flush on
-    // behalf of the category.
-
     runtimeLock.lock();
-	//检查是否是已知的
+	//检查是否是已知的 项目的所有类都是从镜像加载出来的 这里是在镜像加载出的类中查找 如果不是则返回false
+    // 但是这里并没有使用返回值
     checkIsKnownClass(cls);
 
+    // 这个类的内容还没有被加载 会通过镜像加载这个类先关的内容 比如 属性 方法列表
     if (!cls->isRealized()) {
         realizeClass(cls);
     }
-
+    // 如果类需要被initialize但是目前还没有初始化
     if (initialize  &&  !cls->isInitialized()) {
 		//当cls需要初始化和没有初始化的时候 进行cls初始化，
 		//初始化会加入到一个线程，同步执行，先初始化父类，再初始化子类
@@ -4861,7 +4865,7 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
  retry:    
     runtimeLock.assertLocked();
 
-//再次获取imp
+    //再次获取imp
     imp = cache_getImp(cls, sel);
     if (imp) goto done;
 
@@ -4880,6 +4884,7 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
 	//从cls->superclass->data()->methods查找methd，supercls没有查找出来，再查找父类的父类。
     {
         unsigned attempts = unreasonableClassCount();
+        // 递归查找父类 直到父类为nil
         for (Class curClass = cls->superclass;
              curClass != nil;
              curClass = curClass->superclass)
