@@ -4923,7 +4923,7 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
 
     // No implementation found. Try method resolver once.
 	//如果都没找到 动态方法解析阶段
-
+    // 首先判断这个方法有没有被动态解析过 如果解析过则不再进行动态解析
     if (resolver  &&  !triedResolver) {
         runtimeLock.unlock();
         _class_resolveMethod(cls, sel, inst);
@@ -4951,10 +4951,13 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
 * lookUpImpOrNil.
 * Like lookUpImpOrForward, but returns nil instead of _objc_msgForward_impcache
 **********************************************************************/
+// 与lookUpImpOrForward方法类似 但是如果imp是_objc_msgForward_impcache时返回nil
 IMP lookUpImpOrNil(Class cls, SEL sel, id inst, 
                    bool initialize, bool cache, bool resolver)
 {
+    // 获取cls中sel方法的实现IMP 如果没有找到返回_objc_msgForward_impcache 表示需要转发
     IMP imp = lookUpImpOrForward(cls, sel, inst, initialize, cache, resolver);
+    // 如果需要转发那么返回nil
     if (imp == _objc_msgForward_impcache) {
         return nil;
     }else {

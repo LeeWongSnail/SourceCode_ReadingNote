@@ -452,7 +452,7 @@ IMP lookUpImpOrForward(Class cls, SEL sel, id inst,
     }
 
     // No implementation found. Try method resolver once.
-
+    
     if (resolver  &&  !triedResolver) {
         methodListLock.unlock();
         _class_resolveMethod(cls, sel, inst);

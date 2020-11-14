@@ -571,11 +571,14 @@ void fixupCopiedIvars(id newObject, id oldObject)
 * Does not check if the method already exists.
 **********************************************************************/
 // 动态解析类方法
+// 调用_class_resolveClassMethod 查找一个要被添加到cls的方法
+// cls 应该是元类
+// 如果方法已经存在了就不需要检查了
 static void _class_resolveClassMethod(Class cls, SEL sel, id inst)
 {
     assert(cls->isMetaClass());
 
-    // 先判断resolveClassMethod方法是否实现 如果没实现则直接return
+    // 先判断SEL_resolveClassMethod方法是否实现 如果没实现则直接return
     if (! lookUpImpOrNil(cls, SEL_resolveClassMethod, inst, 
                          NO/*initialize*/, YES/*cache*/, NO/*resolver*/)) 
     {
