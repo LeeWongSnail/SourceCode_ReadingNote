@@ -202,11 +202,14 @@ objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)
     initIsa(cls, true, hasCxxDtor);
 }
 
+// cls
+// nonpointer 是否是指针类型
+// hasCxxDtor 有自定义销毁方法
 inline void 
 objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor) 
 { 
     assert(!isTaggedPointer()); 
-    
+    // 如果是指针类型 直接返回
     if (!nonpointer) {
         isa.cls = cls;
     } else {

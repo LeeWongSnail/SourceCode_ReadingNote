@@ -1773,27 +1773,38 @@ _objc_rootAllocWithZone(Class cls, malloc_zone_t *zone)
 
 // Call [cls alloc] or [cls allocWithZone:nil], with appropriate 
 // shortcutting optimizations.
+// ALWAYS_INLINE 强制内联函数 所有加了__attribute__((always_inline))的函数再
+// 把被调用时不会被编译成函数调用而是直接扩展到调用函数体内
 static ALWAYS_INLINE id
 callAlloc(Class cls, bool checkNil, bool allocWithZone=false)
 {
+    // slowpath 表示if条件为0的可能性较大 利于编译器优化指令跳转
+    // 如果需要检查nil 且cls 为nil 那么直接返回nil
+    // 因此 如果cls不存在使用alloc方法创建时可能返回nil
     if (slowpath(checkNil && !cls)) return nil;
 
 #if __OBJC2__
+    // fastpath 表示if条件中为1的可能性较大
+    // 如果类没有自定义的allocwithzone方法
     if (fastpath(!cls->ISA()->hasCustomAWZ())) {
-        // No alloc/allocWithZone implementation. Go straight to the allocator.
-        // fixme store hasCustomAWZ in the non-meta class and 
-        // add it to canAllocFast's summary
+        // cls 是否可以快速创建
         if (fastpath(cls->canAllocFast())) {
             // No ctors, raw isa, etc. Go straight to the metal.
+            // cls是否有c++销毁方法 dtor = destructor
             bool dtor = cls->hasCxxDtor();
+            // calloc 在内存中动态地分配 1 个长度为  cls->bits.fastInstanceSize() 的连续空间
             id obj = (id)calloc(1, cls->bits.fastInstanceSize());
+            // 如果obj为空 类初始化失败 报错 attempt to allocate object of class '%s' failed
             if (slowpath(!obj)) return callBadAllocHandler(cls);
+            // 调用初始化对象isa方法
             obj->initInstanceIsa(cls, dtor);
             return obj;
         }
         else {
             // Has ctor or raw isa or something. Use the slower path.
+            // 调用class_createInstance创建对象
             id obj = class_createInstance(cls, 0);
+            // 如果对象为空 那么直接报错
             if (slowpath(!obj)) return callBadAllocHandler(cls);
             return obj;
         }
@@ -1801,7 +1812,9 @@ callAlloc(Class cls, bool checkNil, bool allocWithZone=false)
 #endif
 
     // No shortcuts available.
+    // alloc 方法会进一步调用allocwithzone方法
     if (allocWithZone) return [cls allocWithZone:nil];
+    // 正常情况不会走到这里 想到与一个递归？
     return [cls alloc];
 }
 
