@@ -416,8 +416,10 @@ objc_object::rootIsDeallocating()
 inline void 
 objc_object::clearDeallocating()
 {
+    // 如果是没有isa优化
     if (slowpath(!isa.nonpointer)) {
         // Slow path for raw pointer isa.
+        // sidetable移除
         sidetable_clearDeallocating();
     }
     else if (slowpath(isa.weakly_referenced  ||  isa.has_sidetable_rc)) {
@@ -811,18 +813,23 @@ objc_object::rootAutorelease()
     return rootAutorelease2();
 }
 
-
+// 获取引用高技术
 inline uintptr_t 
 objc_object::rootRetainCount()
 {
+    //isTaggedPointer 不需要引用计数
     if (isTaggedPointer()) return (uintptr_t)this;
 
     sidetable_lock();
     isa_t bits = LoadExclusive(&isa.bits);
     ClearExclusive(&isa.bits);
+    // 如果是nonpointer
     if (bits.nonpointer) {
+        // 先从extra_rc取出部分引用计数
         uintptr_t rc = 1 + bits.extra_rc;
+        // sidetable中是否有额外的引用计数
         if (bits.has_sidetable_rc) {
+            // 从sidetable中获取引用计数
             rc += sidetable_getExtraRC_nolock();
         }
         sidetable_unlock();
@@ -830,6 +837,7 @@ objc_object::rootRetainCount()
     }
 
     sidetable_unlock();
+    // 如果不是nonpointer 直接从sidetable中获取引用计数
     return sidetable_retainCount();
 }
 

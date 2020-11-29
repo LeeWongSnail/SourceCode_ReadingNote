@@ -248,6 +248,7 @@ void
 objc_storeStrong(id *location, id obj)
 {
     id prev = *location;
+    // 先判断之前的值和要新赋值的对象地址是否相同
     if (obj == prev) {
         return;
     }
@@ -366,6 +367,8 @@ storeWeak(id *location, objc_object *newObj)
  * 
  * @return \e newObj
  */
+// location weak指针自身的地址
+// newObj weak指针指向的新对象的地址
 id
 objc_storeWeak(id *location, id newObj)
 {
@@ -1479,7 +1482,7 @@ objc_object::sidetable_tryRetain()
     return result;
 }
 
-
+// 获取引用计数
 uintptr_t
 objc_object::sidetable_retainCount()
 {
@@ -1491,6 +1494,7 @@ objc_object::sidetable_retainCount()
     RefcountMap::iterator it = table.refcnts.find(this);
     if (it != table.refcnts.end()) {
         // this is valid for SIDE_TABLE_RC_PINNED too
+        // SIDE_TABLE_RC_SHIFT 标志位记录的引用计数的值
         refcnt_result += it->second >> SIDE_TABLE_RC_SHIFT;
     }
     table.unlock();
@@ -1623,8 +1627,11 @@ __attribute__((aligned(16), flatten, noinline))
 id 
 objc_retain(id obj)
 {
+    // 如果为nil 直接返回nil
     if (!obj) return obj;
+    // 如果是taggedPointer 直接返回
     if (obj->isTaggedPointer()) return obj;
+    // 调用retain方法
     return obj->retain();
 }
 

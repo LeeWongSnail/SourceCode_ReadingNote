@@ -2432,19 +2432,21 @@ static id _object_copyFromZone(id oldObj, size_t extraBytes, void *zone)
 * Returns `obj`. Does nothing if `obj` is nil.
 * CoreFoundation and other clients do call this under GC.
 **********************************************************************/
+// 对象的析构方法
 void *objc_destructInstance(id obj) 
 {
     if (obj) {
+        // 获取到isa
         Class isa = obj->getIsa();
-
+        // 是否有c++析构方法 有则执行
         if (isa->hasCxxDtor()) {
             object_cxxDestruct(obj);
         }
-
+        // 是否有关联对象 有则移除
         if (isa->instancesHaveAssociatedObjects()) {
             _object_remove_assocations(obj);
         }
-
+        // 调用objc_clear_deallocating方法
         objc_clear_deallocating(obj);
     }
 
